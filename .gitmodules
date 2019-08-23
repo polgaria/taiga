@@ -1,0 +1,6 @@
+[submodule "sleepy-discord"]
+	path = sleepy-discord
+	url = https://github.com/yourWaifu/sleepy-discord.git
+[submodule "rapidjson"]
+	path = rapidjson
+	url = https://github.com/Tencent/rapidjson.git
