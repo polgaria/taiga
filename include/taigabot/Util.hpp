@@ -6,6 +6,7 @@
 
 namespace TaigaBot::Util {
 rapidjson::Document get_post(const char *url);
+float year_progress();
 }  // namespace TaigaBot::Util
 
 #endif

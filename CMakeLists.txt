@@ -17,7 +17,10 @@ add_subdirectory(src)
 
 add_subdirectory(apps)
 
+find_library(fmt CONFIG REQUIRED)
+
 add_subdirectory(sleepy-discord)
+add_subdirectory(date)
 
 add_library(rapidjson INTERFACE)
 target_include_directories(rapidjson INTERFACE ./rapidjson/include)

@@ -4,7 +4,7 @@ add_library(taigabot Client.cpp Util.cpp ${HEADER_LIST})
 
 target_include_directories(taigabot PUBLIC ../include)
 
-target_link_libraries(taigabot sleepy-discord rapidjson)
+target_link_libraries(taigabot sleepy-discord rapidjson date_interface fmt)
 
 target_compile_features(taigabot PUBLIC cxx_std_17)
 
