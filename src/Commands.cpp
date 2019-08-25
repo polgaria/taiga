@@ -14,6 +14,9 @@
 								  std::deque<std::string>& params)
 #endif
 
+#define ADD_COMMAND(name, ...) \
+	TaigaBot::Command::add_command({#name, __VA_ARGS__, name})
+
 COMMAND(help) {
 	constexpr char start[] = "```\\n";
 	constexpr char the_end[] = "```";
@@ -106,13 +109,10 @@ COMMAND(money) {
 }
 
 void TaigaBot::Commands::add_commands() {
-	TaigaBot::Command::add_command({"help", {}, TaigaBot::Commands::help});
-	TaigaBot::Command::add_command({"taiga", {}, TaigaBot::Commands::taiga});
-	TaigaBot::Command::add_command(
-		{"toradora", {}, TaigaBot::Commands::toradora});
-	TaigaBot::Command::add_command(
-		{"progress", {}, TaigaBot::Commands::progress});
-	TaigaBot::Command::add_command({"money",
-									{"currency", "other currency", "amount"},
-									TaigaBot::Commands::money});
+	ADD_COMMAND(help, {});
+	ADD_COMMAND(taiga, {});
+	ADD_COMMAND(toradora, {});
+	ADD_COMMAND(progress, {});
+	ADD_COMMAND(money, {"currency to convert from", "currency to convert to",
+						"amount"});
 }
