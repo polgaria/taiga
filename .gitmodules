@@ -1,9 +1,12 @@
-[submodule "sleepy-discord"]
-	path = sleepy-discord
-	url = https://github.com/yourWaifu/sleepy-discord.git
 [submodule "rapidjson"]
 	path = rapidjson
 	url = https://github.com/Tencent/rapidjson.git
 [submodule "date"]
 	path = date
 	url = https://github.com/HowardHinnant/date.git
+[submodule "sleepy-discord"]
+	path = sleepy-discord
+	url = https://github.com/yourWaifu/sleepy-discord.git
+[submodule "fmt"]
+	path = fmt
+	url = https://github.com/fmtlib/fmt.git
