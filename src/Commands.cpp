@@ -101,10 +101,8 @@ COMMAND(money) {
 
 	client.sendMessage(
 		message.channelID,
-		fmt::format("{:.2f} {} is worth {:.2f} {}",
-					TaigaBot::Util::Math::round_to_dec_places(amount, 2),
-					TaigaBot::Util::String::to_upper(params.front()),
-					TaigaBot::Util::Math::round_to_dec_places(worth, 2),
+		fmt::format("{:.2f} {} is worth {:.2f} {}", amount,
+					TaigaBot::Util::String::to_upper(params.front()), worth,
 					TaigaBot::Util::String::to_upper(params.at(1))));
 }
 

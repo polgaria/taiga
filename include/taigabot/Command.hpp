@@ -5,8 +5,8 @@
 #include <taigabot/Client.hpp>
 
 namespace TaigaBot::Command {
-using Verb = std::function<void(TaigaBot::Client&, SleepyDiscord::Message&,
-								std::deque<std::string>&)>;
+using Verb = std::function<
+	void(TaigaBot::Client&, SleepyDiscord::Message&, std::deque<std::string>&)>;
 struct Command {
 	std::string name;
 	std::deque<std::string> params;

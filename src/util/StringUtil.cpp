@@ -15,7 +15,8 @@ std::deque<std::string> TaigaBot::Util::String::split_by_space(
 }
 
 std::deque<std::string> TaigaBot::Util::String::split_command(
-	const std::string& source, const std::string& prefix) {
+	const std::string& source,
+	const std::string& prefix) {
 	auto arguments = split_by_space(source);
 	arguments.push_front(prefix);
 	return arguments;
