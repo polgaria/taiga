@@ -4,18 +4,15 @@
 #define MATCH(command, s) command.startsWith(s)
 
 void TaigaBot::Client::onMessage(SleepyDiscord::Message message) {
-	auto id = getCurrentUser().cast().ID;
-	if (message.isMentioned(id)) {
-		auto parameters =
-			TaigaBot::Util::String::split_command(message.content);
-		const auto mention = "<@" + id.string() + ">";
-		const auto mentionNick = "<@!" + id.string() + ">";
+	auto prefix = get_config().prefix;
+	if (message.startsWith(prefix)) {
+		auto parameters = TaigaBot::Util::String::split_command(
+			message.content.erase(0, prefix.length()), prefix);
 		if (
 			// only allow if has more then 1 parameter
 			parameters.size() <= 1 &&
 			// only allow if starts with a mention
-			(parameters.front() != mention ||
-			 parameters.front() != mentionNick)) {
+			parameters.front() != prefix) {
 			return;
 		}
 

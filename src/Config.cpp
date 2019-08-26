@@ -2,6 +2,18 @@
 #include <rapidjson/filereadstream.h>
 #include <taigabot/Config.hpp>
 
+#define ENTRY(name, error_message)                       \
+	if (doc.HasMember(#name) && doc[#name].IsString()) { \
+		conf.name = doc[#name].GetString();              \
+	} else {                                             \
+		throw std::runtime_error(error_message);         \
+	}
+
+#define OPTIONAL_ENTRY(name)                                  \
+	conf.name = doc.HasMember(#name) && doc[#name].IsString() \
+					? doc[#name].GetString()                  \
+					: "";
+
 TaigaBot::Config::Config TaigaBot::Config::load_config() {
 	FILE* file = fopen("config.json", "rb");
 	rapidjson::Document doc;
@@ -17,15 +29,9 @@ TaigaBot::Config::Config TaigaBot::Config::load_config() {
 	fclose(file);
 
 	Config conf;
-	if (doc.HasMember("currency_api_token") && doc["token"].IsString()) {
-		conf.token = doc["token"].GetString();
-	} else {
-		throw std::runtime_error("Invalid config: The bot token is missing.");
-	}
-	conf.currency_api_token = doc.HasMember("currency_api_token") &&
-									  doc["currency_api_token"].IsString()
-								  ? doc["currency_api_token"].GetString()
-								  : "";
+	ENTRY(prefix, "Invalid config: The bot prefix is missing.");
+	ENTRY(token, "Invalid config: The bot token is missing");
+	OPTIONAL_ENTRY(currency_api_token);
 
 	return conf;
 }

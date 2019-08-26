@@ -19,7 +19,9 @@ T string_to_number(const std::string& number_as_string) {
 	}
 	return valor;
 }
-std::deque<std::string> split_command(const std::string& source);
+std::deque<std::string> split_by_space(const std::string& source);
+std::deque<std::string> split_command(const std::string& source,
+									  const std::string& prefix);
 std::string& to_upper(std::string& string);
 }  // namespace TaigaBot::Util::String
 
