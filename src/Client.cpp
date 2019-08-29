@@ -1,8 +1,6 @@
 #include <taigabot/Command.hpp>
 #include <taigabot/util/StringUtil.hpp>
 
-#define MATCH(command, s) command.startsWith(s)
-
 void TaigaBot::Client::onMessage(SleepyDiscord::Message message) {
 	auto prefix = get_config().prefix;
 	if (message.startsWith(prefix)) {
@@ -30,7 +28,14 @@ void TaigaBot::Client::onMessage(SleepyDiscord::Message message) {
 			return;
 		}
 		parameters.pop_front();
-		if (parameters.size() < foundCommand->second.params.size()) {
+
+		unsigned short requiredParams;
+		for (const auto& param : foundCommand->second.params) {
+			if (param.required) {
+				requiredParams++;
+			}
+		}
+		if (parameters.size() < requiredParams) {
 			sendMessage(message.channelID, "Too few arguments.");
 			return;
 		}
@@ -44,6 +49,6 @@ TaigaBot::Config::Config TaigaBot::Client::get_config() {
 	return TaigaBot::Client::config;
 }
 
-void TaigaBot::Client::set_config(TaigaBot::Config::Config conf) {
-	TaigaBot::Client::config = conf;
+void TaigaBot::Client::set_config(TaigaBot::Config::Config config) {
+	TaigaBot::Client::config = config;
 }

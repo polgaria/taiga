@@ -39,9 +39,9 @@ float TaigaBot::Util::year_progress() {
 
 float TaigaBot::Util::conversion_rate(const std::string& from,
 									  const std::string& to,
-									  const std::string& token) {
-	if (token.empty()) {
-		throw std::runtime_error("Currency API token not set.");
+									  const std::string& api_key) {
+	if (api_key.empty()) {
+		throw std::runtime_error("Currency API key not set.");
 	}
 	auto currency_to_currency = fmt::format("{}_{}", from, to);
 	TaigaBot::Util::String::to_upper(currency_to_currency);
@@ -49,14 +49,31 @@ float TaigaBot::Util::conversion_rate(const std::string& from,
 	auto url = fmt::format(
 		"https://free.currconv.com/api/v7/"
 		"convert?q={}&compact=ultra&apiKey={}",
-		currency_to_currency, token);
+		currency_to_currency, api_key);
 
 	auto request =
 		cpr::Get(cpr::Url{url}, cpr::Header{{"User-Agent", "taigabot-cpp"}});
-	if (request.status_code == 429) {
-		throw std::runtime_error("Ratelimited.");
-	} else if (request.status_code == 400) {
-		throw std::runtime_error("Invalid token.");
+	switch (request.status_code) {
+		case 200: {
+			break;
+		}
+		case 429: {
+			throw std::runtime_error("Ratelimited.");
+			break;
+		}
+		case 400: {
+			throw std::runtime_error("Invalid API key.");
+			break;
+		}
+		case 503: {
+			throw std::runtime_error(
+				"Currency Conversion API is down. Please try again later.");
+			break;
+		}
+		default: {
+			throw std::runtime_error("Unknown error.");
+			break;
+		}
 	}
 
 	rapidjson::Document json;

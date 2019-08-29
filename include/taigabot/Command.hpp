@@ -7,9 +7,14 @@
 namespace TaigaBot::Command {
 using Verb = std::function<
 	void(TaigaBot::Client&, SleepyDiscord::Message&, std::deque<std::string>&)>;
+
+struct Parameter {
+	std::string name;
+	bool required = true;
+};
 struct Command {
 	std::string name;
-	std::deque<std::string> params;
+	std::deque<Parameter> params;
 	Verb verb;
 };
 

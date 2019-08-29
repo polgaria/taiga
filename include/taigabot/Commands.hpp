@@ -13,6 +13,8 @@ COMMAND(taiga)
 COMMAND(toradora)
 COMMAND(progress)
 COMMAND(money)
+COMMAND(set_tz)
+COMMAND(tz)
 
 void add_commands();
 }  // namespace TaigaBot::Commands

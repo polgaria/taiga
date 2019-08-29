@@ -11,7 +11,6 @@ set(HEADER_LIST
 add_library(taigabot
     Client.cpp
     util/Util.cpp
-    util/MathUtil.cpp
     util/StringUtil.cpp
     Command.cpp
     Commands.cpp
@@ -19,9 +18,23 @@ add_library(taigabot
     ${HEADER_LIST}
 )
 
-target_include_directories(taigabot PUBLIC ../include)
+target_include_directories(taigabot PUBLIC
+    ../include
+    ${LIBMONGOCXX_INCLUDE_DIRS}
+)
 
-target_link_libraries(taigabot PUBLIC sleepy-discord rapidjson date_interface fmt)
+target_link_libraries(taigabot PUBLIC
+    sleepy-discord
+    rapidjson
+    date_interface
+    tz
+    fmt
+    ${LIBMONGOCXX_LIBRARIES}
+)
+
+target_compile_definitions(taigabot PUBLIC
+    ${LIBMONGOCXX_DEFINITIONS}
+)
 
 target_compile_features(taigabot PUBLIC cxx_std_17)
 

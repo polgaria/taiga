@@ -1,5 +1,10 @@
+#include <date/date.h>
+#include <date/tz.h>
 #include <fmt/format.h>
 #include <rapidjson/document.h>
+#include <bsoncxx/builder/stream/document.hpp>
+#include <mongocxx/client.hpp>
+#include <mongocxx/uri.hpp>
 #include <taigabot/Command.hpp>
 #include <taigabot/Commands.hpp>
 #include <taigabot/util/MathUtil.hpp>
@@ -25,9 +30,9 @@ COMMAND(help) {
 	for (TaigaBot::Command::MappedCommand& command : TaigaBot::Command::all) {
 		length += command.first.size();
 		length += 2;  // ' ' and '\n'
-		for (auto param_name : command.second.params) {
-			length += 2;  // '<' and '> '
-			length += param_name.size();
+		for (const auto& param : command.second.params) {
+			length += 2;  // '<' / '[' and '> ' / '] '
+			length += param.name.size();
 		}
 	}
 
@@ -37,10 +42,8 @@ COMMAND(help) {
 	for (TaigaBot::Command::MappedCommand& command : TaigaBot::Command::all) {
 		output += command.first;
 		output += ' ';
-		for (auto param_name : command.second.params) {
-			output += '<';
-			output += param_name;
-			output += "> ";
+		for (const auto& param : command.second.params) {
+			output += fmt::format(param.required ? "<{}>" : "[{}]", param.name);
 		}
 		output += "\\n";
 	}
@@ -106,11 +109,106 @@ COMMAND(money) {
 					TaigaBot::Util::String::to_upper(params.at(1))));
 }
 
+COMMAND(set_tz) {
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+
+	mongocxx::client mongodb_client{mongocxx::uri{}};
+
+	auto db = mongodb_client["taigabot"];
+	auto timezones = db["timezones"];
+
+	auto timezone = params.front();
+	date::zoned_time<std::chrono::nanoseconds, const date::time_zone*> time;
+	try {
+		time = date::zoned_time{timezone, std::chrono::system_clock::now()};
+	} catch (const std::runtime_error& error) {
+		client.sendMessage(message.channelID, "Invalid timezone.");
+		return;
+	}
+
+	// clang-format off
+	timezones.update_one(document{}
+							<< "id" << message.author.ID
+							<< finalize,
+						 document{}
+						 	<< "$set" << open_document
+								<< "timezone" << timezone
+							<< close_document
+							<< finalize,
+						 mongocxx::options::update{}.upsert(true));
+	// clang-format on
+	client.sendMessage(
+		message.channelID,
+		fmt::format("Your timezone is now set to {}.\\nYour time is: {}.",
+					timezone, date::format("%F %H:%M", time)));
+}
+
+COMMAND(tz) {
+	using bsoncxx::builder::stream::close_document;
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+	using bsoncxx::builder::stream::open_document;
+
+	mongocxx::client mongodb_client{mongocxx::uri{}};
+
+	auto db = mongodb_client["taigabot"];
+	auto timezones = db["timezones"];
+
+	auto server = client.getServer(message.serverID).cast();
+	SleepyDiscord::ServerMember member;
+
+	if (params.size() != 0) {
+		for (const auto& _member :
+			 client.listMembers(message.serverID, 1000).vector()) {
+			if (_member.nick == params.at(1) ||
+				_member.user.username == params.at(1)) {
+				member = _member;
+				return;
+			}
+		}
+	}
+	const auto member_name =
+		member.nick == "" ? member.user.username : member.nick;
+
+	const auto id = params.size() == 0 ? message.author.ID : member.ID;
+	bsoncxx::stdx::optional<bsoncxx::document::value> op_result =
+		timezones.find_one(document{} << "id" << id << finalize);
+
+	if (!op_result) {
+		client.sendMessage(
+			message.channelID,
+			params.size() == 0
+				? "Your timezone has not been set."
+				: fmt::format("{}'s timezone has not been set", member_name));
+		return;
+	}
+
+	auto result = op_result->view();
+
+	auto timezone = result["timezone"].get_utf8().value.to_string();
+	auto time = date::zoned_time{timezone, std::chrono::system_clock::now()};
+
+	auto tz_message =
+		params.size() == 0
+			? fmt::format("Your timezone is {}.\\nYour time is: {}.", timezone,
+						  date::format("%F %H:%M", time))
+			: fmt::format("{0}'s timezone is {}.\\n{0}'s time is {}",
+						  member_name, timezone,
+						  date::format("%F %H:%M", time));
+	client.sendMessage(message.channelID, tz_message);
+}
+
 void TaigaBot::Commands::add_commands() {
 	ADD_COMMAND(help, {});
 	ADD_COMMAND(taiga, {});
 	ADD_COMMAND(toradora, {});
 	ADD_COMMAND(progress, {});
-	ADD_COMMAND(money, {"currency to convert from", "currency to convert to",
-						"amount"});
+	ADD_COMMAND(
+		money,
+		{{"currency to convert from"}, {"currency to convert to"}, {"amount"}});
+	ADD_COMMAND(set_tz, {{"timezone"}});
+	ADD_COMMAND(tz, {{"user", false}});
 }

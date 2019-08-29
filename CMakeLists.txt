@@ -13,6 +13,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
+find_package(libmongocxx REQUIRED)
+find_package(libbsoncxx REQUIRED)
+
 add_subdirectory(src)
 
 add_subdirectory(apps)

@@ -1,3 +1,4 @@
+#include <mongocxx/instance.hpp>
 #include <taigabot/Client.hpp>
 #include <taigabot/Commands.hpp>
 
@@ -9,6 +10,8 @@ int main(int argc, char* argv[]) {
 
 	TaigaBot::Commands::add_commands();
 	TaigaBot::Config::Config conf = TaigaBot::Config::load_config();
+
+	mongocxx::instance instance{};
 
 	TaigaBot::Client client(conf.token, 2);
 	client.set_config(conf);

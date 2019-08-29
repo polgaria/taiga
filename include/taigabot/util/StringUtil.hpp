@@ -6,7 +6,9 @@
 #include <deque>
 
 namespace TaigaBot::Util::String {
-template <typename T>
+template <
+	typename T,
+	typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
 T string_to_number(const std::string& number_as_string) {
 	T valor;
 

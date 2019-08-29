@@ -3,6 +3,7 @@
 
 #include <cpr/cpr.h>
 #include <sleepy_discord/websocketpp_websocket.h>
+#include <mongocxx/client.hpp>
 #include <taigabot/Config.hpp>
 
 namespace TaigaBot {
