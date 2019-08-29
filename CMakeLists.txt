@@ -15,14 +15,14 @@ endif()
 
 find_package(libmongocxx REQUIRED)
 find_package(libbsoncxx REQUIRED)
+find_package(Aegis REQUIRED)
 
 add_subdirectory(src)
 
 add_subdirectory(apps)
 
 add_subdirectory(date)
-add_subdirectory(sleepy-discord)
-add_subdirectory(fmt)
+add_subdirectory(cpr)
 
 add_library(rapidjson INTERFACE)
 target_include_directories(rapidjson INTERFACE ./rapidjson/include)

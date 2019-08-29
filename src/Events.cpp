@@ -1,11 +1,15 @@
+#include <cpr/cpr.h>
+#include <aegis.hpp>
 #include <taigabot/Command.hpp>
+#include <taigabot/Events.hpp>
 #include <taigabot/util/StringUtil.hpp>
 
-void TaigaBot::Client::onMessage(SleepyDiscord::Message message) {
-	auto prefix = get_config().prefix;
-	if (message.startsWith(prefix)) {
+void TaigaBot::Events::on_message(aegis::gateway::events::message_create obj) {
+	std::string prefix = "t!";
+	auto content = obj.msg.get_content();
+	if (content.compare(0, prefix.size(), prefix)) {
 		auto parameters = TaigaBot::Util::String::split_command(
-			message.content.erase(0, prefix.length()), prefix);
+			content.erase(0, prefix.length()), prefix);
 		if (
 			// only allow if has more then 1 parameter
 			parameters.size() <= 1 &&
@@ -24,7 +28,7 @@ void TaigaBot::Client::onMessage(SleepyDiscord::Message message) {
 		TaigaBot::Command::MappedCommands::iterator foundCommand =
 			TaigaBot::Command::all.find(parameters.front());
 		if (foundCommand == TaigaBot::Command::all.end()) {
-			sendMessage(message.channelID, "Command not found.");
+			obj.channel.create_message("Command not found.");
 			return;
 		}
 		parameters.pop_front();
@@ -36,19 +40,11 @@ void TaigaBot::Client::onMessage(SleepyDiscord::Message message) {
 			}
 		}
 		if (parameters.size() < requiredParams) {
-			sendMessage(message.channelID, "Too few arguments.");
+			obj.channel.create_message("Too few arguments.");
 			return;
 		}
 
 		// call command
-		foundCommand->second.verb(*this, message, parameters);
+		foundCommand->second.verb(obj.msg, parameters);
 	}
-}
-
-TaigaBot::Config::Config TaigaBot::Client::get_config() {
-	return TaigaBot::Client::config;
-}
-
-void TaigaBot::Client::set_config(TaigaBot::Config::Config config) {
-	TaigaBot::Client::config = config;
 }

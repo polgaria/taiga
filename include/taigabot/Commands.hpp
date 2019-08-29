@@ -1,11 +1,10 @@
 #ifndef COMMANDS_HPP
 #define COMMANDS_HPP
 
-#include <taigabot/Client.hpp>
+#include <taigabot/Events.hpp>
 
-#define COMMAND(name)                                                    \
-	void name(TaigaBot::Client& client, SleepyDiscord::Message& message, \
-			  std::deque<std::string>& params);
+#define COMMAND(name) \
+	void name(aegis::gateway::objects::message, std::deque<std::string>&);
 
 namespace TaigaBot::Commands {
 COMMAND(help)

@@ -13,9 +13,8 @@
 
 #ifdef COMMAND
 #undef COMMAND
-#define COMMAND(name)                                              \
-	void TaigaBot::Commands::name(TaigaBot::Client& client,        \
-								  SleepyDiscord::Message& message, \
+#define COMMAND(name)                                                       \
+	void TaigaBot::Commands::name(aegis::gateway::objects::message message, \
 								  std::deque<std::string>& params)
 #endif
 
@@ -48,15 +47,14 @@ COMMAND(help) {
 		output += "\\n";
 	}
 	output += the_end;
-	client.sendMessage(message.channelID, output);
+	message.get_channel().create_message(output);
 }
 
 COMMAND(taiga) {
 	auto post =
 		TaigaBot::Util::get_post("https://reddit.com/r/taiga/random.json");
 
-	client.sendMessage(
-		message.channelID,
+	message.get_channel().create_message(
 		post[0]["data"]["children"][0]["data"]["url"].GetString());
 }
 
@@ -64,8 +62,7 @@ COMMAND(toradora) {
 	auto post =
 		TaigaBot::Util::get_post("https://reddit.com/r/toradora/random.json");
 
-	client.sendMessage(
-		message.channelID,
+	message.get_channel().create_message(
 		post[0]["data"]["children"][0]["data"]["url"].GetString());
 }
 
@@ -77,18 +74,18 @@ COMMAND(progress) {
 		msg += progress < percent / 5 ? "▓" : "░";
 	}
 
-	client.sendMessage(message.channelID,
-					   fmt::format("{} {:.2f}%", msg, percent));
+	message.get_channel().create_message(
+		fmt::format("{} {:.2f}%", msg, percent));
 }
 
 COMMAND(money) {
 	float conversion_rate;
 	try {
-		conversion_rate = TaigaBot::Util::conversion_rate(
-			params.front(), params.at(1),
-			client.get_config().currency_api_token);
+		conversion_rate =
+			TaigaBot::Util::conversion_rate(params.front(), params.at(1),
+											"");  // TODO: config
 	} catch (const std::runtime_error& error) {
-		client.sendMessage(message.channelID, error.what());
+		message.get_channel().create_message(error.what());
 		return;
 	}
 
@@ -96,14 +93,13 @@ COMMAND(money) {
 	try {
 		amount = TaigaBot::Util::String::string_to_number<float>(params.back());
 	} catch (const std::runtime_error& error) {
-		client.sendMessage(message.channelID, "Invalid arguments.");
+		message.get_channel().create_message("Invalid arguments.");
 		return;
 	}
 
 	auto worth = amount * conversion_rate;
 
-	client.sendMessage(
-		message.channelID,
+	message.get_channel().create_message(
 		fmt::format("{:.2f} {} is worth {:.2f} {}", amount,
 					TaigaBot::Util::String::to_upper(params.front()), worth,
 					TaigaBot::Util::String::to_upper(params.at(1))));
@@ -125,13 +121,13 @@ COMMAND(set_tz) {
 	try {
 		time = date::zoned_time{timezone, std::chrono::system_clock::now()};
 	} catch (const std::runtime_error& error) {
-		client.sendMessage(message.channelID, "Invalid timezone.");
+		message.get_channel().create_message("Invalid timezone.");
 		return;
 	}
 
 	// clang-format off
 	timezones.update_one(document{}
-							<< "id" << message.author.ID
+							<< "id" << message.author.id
 							<< finalize,
 						 document{}
 						 	<< "$set" << open_document
@@ -140,8 +136,7 @@ COMMAND(set_tz) {
 							<< finalize,
 						 mongocxx::options::update{}.upsert(true));
 	// clang-format on
-	client.sendMessage(
-		message.channelID,
+	message.get_channel().create_message(
 		fmt::format("Your timezone is now set to {}.\\nYour time is: {}.",
 					timezone, date::format("%F %H:%M", time)));
 }
@@ -157,32 +152,25 @@ COMMAND(tz) {
 	auto db = mongodb_client["taigabot"];
 	auto timezones = db["timezones"];
 
-	auto server = client.getServer(message.serverID).cast();
-	SleepyDiscord::ServerMember member;
-
+	auto server = message.get_channel().get_guild();
 	if (params.size() != 0) {
-		for (const auto& _member :
-			 client.listMembers(message.serverID, 1000).vector()) {
-			if (_member.nick == params.at(1) ||
-				_member.user.username == params.at(1)) {
-				member = _member;
-				return;
-			}
+		auto members = server.get_members();
+		for (const auto& _member : members) {
 		}
 	}
-	const auto member_name =
-		member.nick == "" ? member.user.username : member.nick;
+	// const auto member_name =
+	// member.nick == "" ? member.user.username : member.nick;
 
-	const auto id = params.size() == 0 ? message.author.ID : member.ID;
+	const auto id =			// params.size() == 0
+		message.author.id;  //: member.ID;
 	bsoncxx::stdx::optional<bsoncxx::document::value> op_result =
 		timezones.find_one(document{} << "id" << id << finalize);
 
 	if (!op_result) {
-		client.sendMessage(
-			message.channelID,
+		message.get_channel().create_message(
 			params.size() == 0
 				? "Your timezone has not been set."
-				: fmt::format("{}'s timezone has not been set", member_name));
+				: fmt::format("{}'s timezone has not been set", ""));
 		return;
 	}
 
@@ -195,10 +183,9 @@ COMMAND(tz) {
 		params.size() == 0
 			? fmt::format("Your timezone is {}.\\nYour time is: {}.", timezone,
 						  date::format("%F %H:%M", time))
-			: fmt::format("{0}'s timezone is {}.\\n{0}'s time is {}",
-						  member_name, timezone,
-						  date::format("%F %H:%M", time));
-	client.sendMessage(message.channelID, tz_message);
+			: fmt::format("{0}'s timezone is {}.\\n{0}'s time is {}", "",
+						  timezone, date::format("%F %H:%M", time));
+	message.get_channel().create_message(tz_message);
 }
 
 void TaigaBot::Commands::add_commands() {

@@ -31,7 +31,6 @@ TaigaBot::Config::Config TaigaBot::Config::load_config() {
 	Config conf;
 	ENTRY(prefix, "Invalid config: The bot prefix is missing.");
 	ENTRY(token, "Invalid config: The bot token is missing");
-	OPTIONAL_ENTRY(currency_api_token);
 
 	return conf;
 }

@@ -1,12 +1,15 @@
 #ifndef COMMAND_HPP
 #define COMMAND_HPP
 
+#include <aegis/gateway/objects/message.hpp>
+#include <deque>
+#include <functional>
 #include <iostream>
-#include <taigabot/Client.hpp>
+#include <map>
 
 namespace TaigaBot::Command {
-using Verb = std::function<
-	void(TaigaBot::Client&, SleepyDiscord::Message&, std::deque<std::string>&)>;
+using Verb = std::function<void(aegis::gateway::objects::message,
+								std::deque<std::string>&)>;
 
 struct Parameter {
 	std::string name;
