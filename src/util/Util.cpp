@@ -1,19 +1,20 @@
 #include <cpr/cpr.h>
 #include <date/date.h>
+#include <nlohmann/json.hpp>
 #include <taigabot/util/MathUtil.hpp>
 #include <taigabot/util/StringUtil.hpp>
 #include <taigabot/util/Util.hpp>
 
-rapidjson::Document TaigaBot::Util::get_post(const char* url) {
+nlohmann::json TaigaBot::Util::get_post(const char* url) {
 	auto post_json_string =
 		cpr::Get(cpr::Url{url}, cpr::Header{{"User-Agent", "taigabot-cpp"}})
 			.text;
 
-	rapidjson::Document post_json;
-	post_json.Parse(post_json_string.c_str());
+	nlohmann::json post_json;
+	post_json.parse(post_json_string);
 
-	while (post_json.IsNull() ||
-		   post_json[0]["data"]["children"][0]["data"]["is_self"].GetBool()) {
+	while (post_json.is_null() ||
+		   post_json[0]["data"]["children"][0]["data"]["is_self"].get<bool>()) {
 		post_json = TaigaBot::Util::get_post(url);
 	}
 
@@ -76,12 +77,11 @@ float TaigaBot::Util::conversion_rate(const std::string& from,
 		}
 	}
 
-	rapidjson::Document json;
-	json.Parse(request.text.c_str());
+	nlohmann::json json;
+	json.parse(request.text);
 
-	if (!json.HasMember(currency_to_currency.c_str())) {
+	if (json.find(currency_to_currency) == json.end()) {
 		throw std::runtime_error("Invalid arguments.");
 	}
-	rapidjson::Value& conversion_rate = json[currency_to_currency.c_str()];
-	return conversion_rate.GetFloat();
+	return json[currency_to_currency].get<float>();
 }

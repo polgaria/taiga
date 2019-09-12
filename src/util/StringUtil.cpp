@@ -11,6 +11,7 @@ std::deque<std::string> TaigaBot::Util::String::split_by_space(
 			target.push_back(item);
 		}
 	}
+
 	return target;
 }
 
@@ -19,12 +20,15 @@ std::deque<std::string> TaigaBot::Util::String::split_command(
 	const std::string& prefix) {
 	auto arguments = split_by_space(source);
 	arguments.push_front(prefix);
+
 	return arguments;
 }
 
-std::string& TaigaBot::Util::String::to_upper(std::string& string) {
-	for (auto& c : string) {
+std::string TaigaBot::Util::String::to_upper(const std::string& string) {
+	auto string_upper{string};
+	for (auto& c : string_upper) {
 		c = toupper(static_cast<unsigned char>(c));
 	}
-	return string;
+
+	return string_upper;
 }

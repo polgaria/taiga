@@ -6,10 +6,13 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <taigabot/Client.hpp>
+#include <taigabot/Config.hpp>
 
 namespace TaigaBot::Command {
-using Verb = std::function<void(aegis::gateway::objects::message,
-								std::deque<std::string>&)>;
+using Verb = std::function<void(aegis::gateway::events::message_create,
+								const std::deque<std::string>,
+								TaigaBot::Client*)>;
 
 struct Parameter {
 	std::string name;

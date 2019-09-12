@@ -5,12 +5,9 @@
 
 namespace TaigaBot::Config {
 struct Config {
-	std::string token;
 	std::string prefix;
+	std::string currency_conv_api_key;
 };
-
-Config load_config();
-Config get_config();
 }  // namespace TaigaBot::Config
 
 #endif

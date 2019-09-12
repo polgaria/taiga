@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12...3.15)
 
-project(taigabot VERSION 1.0
+project(taigabot  VERSION 1.0
                   DESCRIPTION "discord bot"
                   LANGUAGES CXX)
 
@@ -13,6 +13,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
+find_package(PkgConfig)
 find_package(libmongocxx REQUIRED)
 find_package(libbsoncxx REQUIRED)
 find_package(Aegis REQUIRED)

@@ -1,17 +1,22 @@
 #include <aegis.hpp>
 #include <mongocxx/instance.hpp>
+#include <taigabot/Client.hpp>
 #include <taigabot/Commands.hpp>
-#include <taigabot/Events.hpp>
+#include <taigabot/Config.hpp>
 
 int main(int argc, char* argv[]) {
-	if (argc == 0) {
-		printf("no token!\n");
-		return 1;
-	}
 	aegis::core bot(spdlog::level::trace);
-	bot.set_on_message_create(TaigaBot::Events::on_message);
-	TaigaBot::Commands::add_commands();
-	TaigaBot::Config::Config conf = TaigaBot::Config::load_config();
 
+	TaigaBot::Client client{};
+	client.set_bot(bot);
+	client.load_config();
+
+	bot.set_on_message_create(std::bind(&TaigaBot::Client::message_create,
+										&client, std::placeholders::_1));
+
+	TaigaBot::Commands::add_commands(bot.log);
 	mongocxx::instance instance{};
+
+	bot.run();
+	bot.yield();
 }
