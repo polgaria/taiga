@@ -1,31 +1,32 @@
 set(HEADER_LIST
-	"${taigabot_SOURCE_DIR}/include/taigabot/Command.hpp"
-	"${taigabot_SOURCE_DIR}/include/taigabot/Commands.hpp"
-	"${taigabot_SOURCE_DIR}/include/taigabot/Config.hpp"
-	"${taigabot_SOURCE_DIR}/include/taigabot/util/Util.hpp"
-	"${taigabot_SOURCE_DIR}/include/taigabot/util/MathUtil.hpp"
-	"${taigabot_SOURCE_DIR}/include/taigabot/util/StringUtil.hpp"
-	"${taigabot_SOURCE_DIR}/include/taigabot/Client.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/Command.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/Commands.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/Config.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/Util.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/MathUtil.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/StringUtil.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/CommandUtil.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/Client.hpp"
 ) 
 
-add_library(taigabot
+add_library(taiga
 	util/Util.cpp
 	util/StringUtil.cpp
+	util/CommandUtil.cpp
 	Command.cpp
 	Commands.cpp
 	Client.cpp
 	${HEADER_LIST}
 )
 
-target_include_directories(taigabot PUBLIC
+target_include_directories(taiga PUBLIC
 	../include
 	${CPR_INCLUDE_DIRS}
 	${LIBMONGOCXX_INCLUDE_DIRS}
 	${Aegis_INCLUDE_DIRS}
 )
 
-target_link_libraries(taigabot PUBLIC
-	rapidjson
+target_link_libraries(taiga PUBLIC
 	date_interface
 	tz
 	${CPR_LIBRARIES}
@@ -33,10 +34,10 @@ target_link_libraries(taigabot PUBLIC
 	${Aegis_LIBRARIES}
 )
 
-target_compile_definitions(taigabot PUBLIC
+target_compile_definitions(taiga PUBLIC
 	${LIBMONGOCXX_DEFINITIONS}
 )
 
-target_compile_features(taigabot PUBLIC cxx_std_17 ${Aegis_CFLAGS_OTHER}) 
+target_compile_features(taiga PUBLIC cxx_std_17 ${Aegis_CFLAGS_OTHER}) 
 
 source_group(TREE "${PROJECT_SOURCE_DIR}/include" PREFIX "Header Files" FILES ${HEADER_LIST})

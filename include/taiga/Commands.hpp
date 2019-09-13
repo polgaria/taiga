@@ -2,13 +2,13 @@
 #define COMMANDS_HPP
 
 #include <aegis.hpp>
-#include <taigabot/Config.hpp>
+#include <taiga/Config.hpp>
 
 #define COMMAND(name)                                 \
 	void name(aegis::gateway::events::message_create, \
-			  const std::deque<std::string>, TaigaBot::Client*);
+			  const std::deque<std::string>, Taiga::Client*);
 
-namespace TaigaBot::Commands {
+namespace Taiga::Commands {
 COMMAND(help)
 COMMAND(taiga)
 COMMAND(toradora)
@@ -18,6 +18,6 @@ COMMAND(set_tz)
 COMMAND(tz)
 
 void add_commands(std::shared_ptr<spdlog::logger> log);
-}  // namespace TaigaBot::Commands
+}  // namespace Taiga::Commands
 
 #endif

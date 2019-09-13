@@ -3,11 +3,11 @@
 
 #include <iostream>
 
-namespace TaigaBot::Config {
+namespace Taiga::Config {
 struct Config {
 	std::string prefix;
 	std::string currency_conv_api_key;
 };
-}  // namespace TaigaBot::Config
+}  // namespace Taiga::Config
 
 #endif

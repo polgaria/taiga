@@ -6,13 +6,13 @@
 #include <functional>
 #include <iostream>
 #include <map>
-#include <taigabot/Client.hpp>
-#include <taigabot/Config.hpp>
+#include <taiga/Client.hpp>
+#include <taiga/Config.hpp>
 
-namespace TaigaBot::Command {
+namespace Taiga::Command {
 using Verb = std::function<void(aegis::gateway::events::message_create,
 								const std::deque<std::string>,
-								TaigaBot::Client*)>;
+								Taiga::Client*)>;
 
 struct Parameter {
 	std::string name;
@@ -29,6 +29,6 @@ using MappedCommand = MappedCommands::value_type;
 extern MappedCommands all;
 
 void add_command(Command command);
-}  // namespace TaigaBot::Command
+}  // namespace Taiga::Command
 
 #endif

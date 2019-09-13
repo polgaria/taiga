@@ -1,27 +1,25 @@
 #include <cpr/cpr.h>
 #include <date/date.h>
 #include <nlohmann/json.hpp>
-#include <taigabot/util/MathUtil.hpp>
-#include <taigabot/util/StringUtil.hpp>
-#include <taigabot/util/Util.hpp>
+#include <taiga/util/MathUtil.hpp>
+#include <taiga/util/StringUtil.hpp>
+#include <taiga/util/Util.hpp>
 
-nlohmann::json TaigaBot::Util::get_post(const char* url) {
+nlohmann::json Taiga::Util::get_post(const char* url) {
 	auto post_json_string =
-		cpr::Get(cpr::Url{url}, cpr::Header{{"User-Agent", "taigabot-cpp"}})
-			.text;
+		cpr::Get(cpr::Url{url}, cpr::Header{{"User-Agent", "taiga"}}).text;
 
-	nlohmann::json post_json;
-	post_json.parse(post_json_string);
+	auto post_json = nlohmann::json::parse(post_json_string);
 
 	while (post_json.is_null() ||
 		   post_json[0]["data"]["children"][0]["data"]["is_self"].get<bool>()) {
-		post_json = TaigaBot::Util::get_post(url);
+		post_json = Taiga::Util::get_post(url);
 	}
 
 	return post_json;
 }
 
-float TaigaBot::Util::year_progress() {
+float Taiga::Util::year_progress() {
 	auto now = std::chrono::system_clock::now();
 
 	auto current_date = date::year_month_day{date::floor<date::days>(now)};
@@ -35,17 +33,17 @@ float TaigaBot::Util::year_progress() {
 	auto nonrounded_percent =
 		100.f - (static_cast<float>(days_until_next_year) / days_in_year * 100);
 
-	return TaigaBot::Util::Math::round_to_dec_places(nonrounded_percent, 2);
+	return Taiga::Util::Math::round_to_dec_places(nonrounded_percent, 2);
 }
 
-float TaigaBot::Util::conversion_rate(const std::string& from,
-									  const std::string& to,
-									  const std::string& api_key) {
+float Taiga::Util::conversion_rate(const std::string& from,
+								   const std::string& to,
+								   const std::string& api_key) {
 	if (api_key.empty()) {
 		throw std::runtime_error("Currency API key not set.");
 	}
 	auto currency_to_currency = fmt::format("{}_{}", from, to);
-	TaigaBot::Util::String::to_upper(currency_to_currency);
+	Taiga::Util::String::to_upper(currency_to_currency);
 
 	auto url = fmt::format(
 		"https://free.currconv.com/api/v7/"
@@ -53,7 +51,7 @@ float TaigaBot::Util::conversion_rate(const std::string& from,
 		currency_to_currency, api_key);
 
 	auto request =
-		cpr::Get(cpr::Url{url}, cpr::Header{{"User-Agent", "taigabot-cpp"}});
+		cpr::Get(cpr::Url{url}, cpr::Header{{"User-Agent", "taiga"}});
 	switch (request.status_code) {
 		case 200: {
 			break;
@@ -77,8 +75,7 @@ float TaigaBot::Util::conversion_rate(const std::string& from,
 		}
 	}
 
-	nlohmann::json json;
-	json.parse(request.text);
+	auto json = nlohmann::json::parse(request.text);
 
 	if (json.find(currency_to_currency) == json.end()) {
 		throw std::runtime_error("Invalid arguments.");

@@ -1,33 +1,34 @@
 #include <memory>
-#include <taigabot/Client.hpp>
-#include <taigabot/Command.hpp>
-#include <taigabot/util/StringUtil.hpp>
+#include <taiga/Client.hpp>
+#include <taiga/Command.hpp>
+#include <taiga/util/StringUtil.hpp>
 
-void TaigaBot::Client::message_create(
-	aegis::gateway::events::message_create obj) {
+void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 	auto content = obj.msg.get_content();
 	auto prefix = get_config().prefix;
 	if (!content.compare(0, prefix.size(), prefix)) {
-		auto parameters = TaigaBot::Util::String::split_command(
+		auto parameters = Taiga::Util::String::split_command(
 			content.erase(0, prefix.length()), prefix);
 		if (
-			// only allow if has more then 1 parameter
+			// only allow if it has at least 1 parameter
 			parameters.size() <= 1 &&
-			// only allow if starts with a mention
+			// only allow if starts with prefix
 			parameters.front() != prefix) {
 			return;
 		}
 
 		// remove the parameters as we go
 		parameters.pop_front();
+		// make command name lower-case
+		parameters.front() = Taiga::Util::String::to_lower(parameters.front());
 		if (parameters.empty()) {
 			return;
 		}
 
 		// get command
-		TaigaBot::Command::MappedCommands::iterator foundCommand =
-			TaigaBot::Command::all.find(parameters.front());
-		if (foundCommand == TaigaBot::Command::all.end()) {
+		Taiga::Command::MappedCommands::iterator foundCommand =
+			Taiga::Command::all.find(parameters.front());
+		if (foundCommand == Taiga::Command::all.end()) {
 			obj.channel.create_message("Command not found.");
 			return;
 		}
@@ -49,7 +50,7 @@ void TaigaBot::Client::message_create(
 	}
 }
 
-void TaigaBot::Client::load_config() {
+void Taiga::Client::load_config() {
 #define ENTRY(name, error_message)                                   \
 	if (json.find(#name) != json.end() && json[#name].is_string()) { \
 		conf.name = json[#name].get<std::string>();                  \
@@ -74,7 +75,7 @@ void TaigaBot::Client::load_config() {
 
 	i.close();
 
-	TaigaBot::Config::Config conf;
+	Taiga::Config::Config conf;
 	ENTRY(prefix, "Invalid config: The bot prefix is missing.");
 	OPTIONAL_ENTRY(currency_conv_api_key);
 

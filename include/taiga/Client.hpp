@@ -3,13 +3,13 @@
 
 #include <cpr/cpr.h>
 #include <aegis.hpp>
-#include <taigabot/Config.hpp>
+#include <taiga/Config.hpp>
 
-namespace TaigaBot {
+namespace Taiga {
 class Client {
    public:
 	void load_config();
-	TaigaBot::Config::Config get_config() { return this->config; };
+	Taiga::Config::Config get_config() { return this->config; };
 
 	void set_bot(aegis::core& bot) { this->bot = &bot; }
 	aegis::core* get_bot() { return this->bot; }
@@ -18,8 +18,8 @@ class Client {
 
    private:
 	aegis::core* bot;
-	TaigaBot::Config::Config config;
+	Taiga::Config::Config config;
 };
-}  // namespace TaigaBot
+}  // namespace Taiga
 
 #endif

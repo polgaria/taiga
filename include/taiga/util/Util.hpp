@@ -5,12 +5,12 @@
 #include <spdlog/fmt/bundled/format.h>
 #include <deque>
 
-namespace TaigaBot::Util {
+namespace Taiga::Util {
 nlohmann::json get_post(const char* url);
 float year_progress();
 float conversion_rate(const std::string& from,
 					  const std::string& to,
 					  const std::string& token);
-}  // namespace TaigaBot::Util
+}  // namespace Taiga::Util
 
 #endif

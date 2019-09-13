@@ -1,6 +1,6 @@
-#include <taigabot/Command.hpp>
+#include <taiga/Command.hpp>
 
-void TaigaBot::Command::add_command(Command command) {
+void Taiga::Command::add_command(Command command) {
 	all.emplace(command.name, command);
 }
-TaigaBot::Command::MappedCommands TaigaBot::Command::all;
+Taiga::Command::MappedCommands Taiga::Command::all;

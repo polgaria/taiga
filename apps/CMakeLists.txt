@@ -1,4 +1,4 @@
-add_executable(taigabot-main taigabot.cpp)
-target_compile_features(taigabot-main PRIVATE cxx_std_17)
+add_executable(taiga-main taiga.cpp)
+target_compile_features(taiga-main PRIVATE cxx_std_17)
 
-target_link_libraries(taigabot-main PRIVATE taigabot)
+target_link_libraries(taiga-main PRIVATE taiga)

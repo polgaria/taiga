@@ -5,7 +5,7 @@
 #include <spdlog/fmt/bundled/format.h>
 #include <deque>
 
-namespace TaigaBot::Util::String {
+namespace Taiga::Util::String {
 template <
 	typename T,
 	typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
@@ -24,6 +24,7 @@ std::deque<std::string> split_by_space(const std::string& source);
 std::deque<std::string> split_command(const std::string& source,
 									  const std::string& prefix);
 std::string to_upper(const std::string& string);
-}  // namespace TaigaBot::Util::String
+std::string to_lower(const std::string& string);
+}  // namespace Taiga::Util::String
 
 #endif

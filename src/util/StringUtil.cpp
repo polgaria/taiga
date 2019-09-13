@@ -1,7 +1,7 @@
 #include <sstream>
-#include <taigabot/util/StringUtil.hpp>
+#include <taiga/util/StringUtil.hpp>
 
-std::deque<std::string> TaigaBot::Util::String::split_by_space(
+std::deque<std::string> Taiga::Util::String::split_by_space(
 	const std::string& source) {
 	std::stringstream ss(source);
 	std::string item;
@@ -15,7 +15,7 @@ std::deque<std::string> TaigaBot::Util::String::split_by_space(
 	return target;
 }
 
-std::deque<std::string> TaigaBot::Util::String::split_command(
+std::deque<std::string> Taiga::Util::String::split_command(
 	const std::string& source,
 	const std::string& prefix) {
 	auto arguments = split_by_space(source);
@@ -24,11 +24,20 @@ std::deque<std::string> TaigaBot::Util::String::split_command(
 	return arguments;
 }
 
-std::string TaigaBot::Util::String::to_upper(const std::string& string) {
+std::string Taiga::Util::String::to_upper(const std::string& string) {
 	auto string_upper{string};
 	for (auto& c : string_upper) {
 		c = toupper(static_cast<unsigned char>(c));
 	}
 
 	return string_upper;
+}
+
+std::string Taiga::Util::String::to_lower(const std::string& string) {
+	auto string_lower{string};
+	for (auto& c : string_lower) {
+		c = tolower(static_cast<unsigned char>(c));
+	}
+
+	return string_lower;
 }
