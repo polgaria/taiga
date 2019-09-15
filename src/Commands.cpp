@@ -34,9 +34,8 @@ COMMAND(help) {
 	using aegis::gateway::objects::field;
 
 	if (!params.empty()) {
-		// get command
-		const auto& foundCommand = Taiga::Command::all.find(params.front());
-		if (foundCommand == Taiga::Command::all.end()) {
+		const auto& found_command = Taiga::Command::all.find(params.front());
+		if (found_command == Taiga::Command::all.end()) {
 			obj.channel.create_message("Command not found.");
 			return;
 		}

@@ -26,26 +26,26 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 		}
 
 		// get command
-		const auto& foundCommand = Taiga::Command::all.find(params.front());
-		if (foundCommand == Taiga::Command::all.end()) {
+		const auto& found_command = Taiga::Command::all.find(params.front());
+		if (found_command == Taiga::Command::all.end()) {
 			obj.channel.create_message("Command not found.");
 			return;
 		}
 		params.pop_front();
 
-		unsigned short requiredParams;
-		for (const auto& param : foundCommand->second.params) {
+		unsigned short required_params;
+		for (const auto& param : found_command->second.params) {
 			if (param.required) {
-				requiredParams++;
+				required_params++;
 			}
 		}
-		if (params.size() < requiredParams) {
+		if (params.size() < required_params) {
 			obj.channel.create_message("Too few arguments.");
 			return;
 		}
 
 		// call command
-		foundCommand->second.verb(obj, params, *this);
+		found_command->second.verb(obj, params, *this);
 	}
 }
 
