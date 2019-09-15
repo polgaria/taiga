@@ -18,8 +18,11 @@ find_package(libmongocxx REQUIRED)
 find_package(libbsoncxx REQUIRED)
 find_package(Aegis REQUIRED)
 
-add_subdirectory(date)
-add_subdirectory(cpr)
+add_subdirectory(lib/date)
+add_subdirectory(lib/cpr)
+
+add_library(fifo_map INTERFACE)
+target_include_directories(fifo_map INTERFACE ./lib/fifo_map/src)
 
 add_subdirectory(src)
 add_subdirectory(apps)

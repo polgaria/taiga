@@ -4,9 +4,9 @@
 #include <aegis.hpp>
 
 namespace Taiga::Util::Command {
-std::unique_ptr<aegis::user>& find_user(const std::string& name,
-										const aegis::snowflake& guild_id,
-										Taiga::Client* client);
+std::optional<aegis::user*> find_user(const std::string&,
+									  const aegis::gateway::objects::message&,
+									  Taiga::Client&);
 }  // namespace Taiga::Util::Command
 
 #endif

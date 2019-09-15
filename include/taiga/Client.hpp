@@ -1,7 +1,6 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <cpr/cpr.h>
 #include <aegis.hpp>
 #include <taiga/Config.hpp>
 
@@ -11,8 +10,8 @@ class Client {
 	void load_config();
 	Taiga::Config::Config get_config() { return this->config; };
 
-	void set_bot(aegis::core& bot) { this->bot = &bot; }
-	aegis::core* get_bot() { return this->bot; }
+	void set_bot(aegis::core& _bot) { this->bot = &_bot; }
+	aegis::core* get_bot() { return bot; }
 
 	void message_create(aegis::gateway::events::message_create obj);
 

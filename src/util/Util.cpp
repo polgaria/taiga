@@ -1,22 +1,28 @@
 #include <cpr/cpr.h>
 #include <date/date.h>
+#include <aegis.hpp>
 #include <nlohmann/json.hpp>
 #include <taiga/util/MathUtil.hpp>
 #include <taiga/util/StringUtil.hpp>
 #include <taiga/util/Util.hpp>
 
-nlohmann::json Taiga::Util::get_post(const char* url) {
+std::string Taiga::Util::get_random_reddit_post_url(
+	const std::string& subreddit) {
 	auto post_json_string =
-		cpr::Get(cpr::Url{url}, cpr::Header{{"User-Agent", "taiga"}}).text;
+		cpr::Get(cpr::Url{fmt::format("https://old.reddit.com/r/{}/random.json",
+									  subreddit)},
+				 cpr::Header{{"User-Agent", "taiga"}})
+			.text;
 
 	auto post_json = nlohmann::json::parse(post_json_string);
 
 	while (post_json.is_null() ||
 		   post_json[0]["data"]["children"][0]["data"]["is_self"].get<bool>()) {
-		post_json = Taiga::Util::get_post(url);
+		post_json = Taiga::Util::get_random_reddit_post_url(subreddit);
 	}
 
-	return post_json;
+	return post_json[0]["data"]["children"][0]["data"]["url"]
+		.get<std::string>();
 }
 
 float Taiga::Util::year_progress() {
@@ -38,33 +44,38 @@ float Taiga::Util::year_progress() {
 
 float Taiga::Util::conversion_rate(const std::string& from,
 								   const std::string& to,
-								   const std::string& api_key) {
+								   const std::string& api_key,
+								   aegis::rest::rest_controller& rc) {
 	if (api_key.empty()) {
 		throw std::runtime_error("Currency API key not set.");
 	}
 	auto currency_to_currency = fmt::format("{}_{}", from, to);
 	Taiga::Util::String::to_upper(currency_to_currency);
 
-	auto url = fmt::format(
-		"https://free.currconv.com/api/v7/"
-		"convert?q={}&compact=ultra&apiKey={}",
-		currency_to_currency, api_key);
+	aegis::rest::request_params rp;
+	rp.host = "free.currconv.com";
+	rp.path = fmt::format("/api/v7/convert?q={}&compact=ultra&apiKey={}",
+						  currency_to_currency, api_key);
+	rp.method = aegis::rest::Get;
+	rp.headers = {"User-Agent: taiga"};
 
-	auto request =
-		cpr::Get(cpr::Url{url}, cpr::Header{{"User-Agent", "taiga"}});
-	switch (request.status_code) {
-		case 200: {
+	auto request = rc.execute2(std::forward<aegis::rest::request_params>(rp));
+
+	switch (request.reply_code) {
+		case aegis::rest::http_code::ok: {
 			break;
 		}
-		case 429: {
+		case aegis::rest::http_code::too_many_requests: {
 			throw std::runtime_error("Ratelimited.");
 			break;
 		}
-		case 400: {
+		case aegis::rest::http_code::bad_request: {
 			throw std::runtime_error("Invalid API key.");
 			break;
 		}
-		case 503: {
+		case aegis::rest::http_code::service_unavailable:
+		case aegis::rest::http_code::internal_server_error:
+		case aegis::rest::http_code::server_down: {
 			throw std::runtime_error(
 				"Currency Conversion API is down. Please try again later.");
 			break;
@@ -75,10 +86,10 @@ float Taiga::Util::conversion_rate(const std::string& from,
 		}
 	}
 
-	auto json = nlohmann::json::parse(request.text);
+	auto json = nlohmann::json::parse(request.content);
 
 	if (json.find(currency_to_currency) == json.end()) {
-		throw std::runtime_error("Invalid arguments.");
+		throw std::invalid_argument("Invalid arguments.");
 	}
 	return json[currency_to_currency].get<float>();
 }

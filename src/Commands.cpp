@@ -1,8 +1,8 @@
 #include <date/date.h>
 #include <date/tz.h>
-#include <rapidjson/document.h>
 #include <spdlog/spdlog.h>
 #include <bsoncxx/builder/stream/document.hpp>
+#include <fifo_map.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
 #include <taiga/Client.hpp>
@@ -15,63 +15,85 @@
 
 #ifdef COMMAND
 #undef COMMAND
-#define COMMAND(name)                                                      \
-	void Taiga::Commands::name(aegis::gateway::events::message_create obj, \
-							   const std::deque<std::string> params,       \
-							   Taiga::Client* client)
+#define COMMAND(name)                                                       \
+	void Taiga::Commands::name(aegis::gateway::events::message_create& obj, \
+							   const std::deque<std::string>& params,       \
+							   Taiga::Client& client)
 #endif
 
-#define ADD_COMMAND(name, ...)                          \
-	log->info(fmt::format("Adding command {}", #name)); \
-	Taiga::Command::add_command({#name, __VA_ARGS__, name})
+#define ADD_COMMAND(name, category, ...)               \
+	log.info(fmt::format("Adding command {}", #name)); \
+	Taiga::Command::add_command({#name, category, __VA_ARGS__, name})
+
+#define ADD_COMMAND_DESC(name, desc, category, ...)    \
+	log.info(fmt::format("Adding command {}", #name)); \
+	Taiga::Command::add_command({#name, category, __VA_ARGS__, name, desc})
 
 COMMAND(help) {
-	const auto start{"```\n"};
-	const auto the_end{"```"};
-	// estimate length
-	auto length = strlen(start) + strlen(the_end);
-	for (Taiga::Command::MappedCommand& command : Taiga::Command::all) {
-		length += command.first.size();
-		length += 2;  // ' ' and '\n'
-		for (const auto& param : command.second.params) {
-			length += 2;  // '<' / '[' and '>
-						  // ' / '] '
-			length += param.name.size();
-		}
-	}
+	using aegis::gateway::objects::field;
 
-	std::string output;
-	output.reserve(length);
-	output += start;
-	for (Taiga::Command::MappedCommand& command : Taiga::Command::all) {
-		output += command.first;
-		output += ' ';
-		for (const auto& param : command.second.params) {
-			output +=
+	if (!params.empty()) {
+		// get command
+		const auto& foundCommand = Taiga::Command::all.find(params.front());
+		if (foundCommand == Taiga::Command::all.end()) {
+			obj.channel.create_message("Command not found.");
+			return;
+		}
+
+		const auto& command = Taiga::Command::all.at(params.front());
+		auto fields = std::vector<field>();
+
+		auto embed{aegis::gateway::objects::embed()
+					   .title(fmt::format("**{}**", command.name))
+					   .color(0x3498DB)};
+
+		auto syntax{fmt::format(command.params.empty() ? "`{}{}" : "`{}{} ",
+								client.get_config().prefix, command.name)};
+		for (const auto& param : command.params) {
+			syntax +=
 				fmt::format(param.required ? "<{}> " : "[{}] ", param.name);
 		}
-		output += "\n";
+		syntax += '`';
+
+		fields.push_back({field().name("**Syntax**").value(syntax)});
+
+		if (command.description) {
+			fields.push_back({field()
+								  .name("**Description**")
+								  .value(command.description.value())});
+		}
+
+		embed.fields(fields);
+
+		obj.channel.create_message(aegis::create_message_t().embed(embed));
+
+		return;
 	}
-	output += the_end;
-	obj.channel.create_message(output);
+	auto embed{
+		aegis::gateway::objects::embed().title("**Commands**").color(0x3498DB)};
+	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
+	auto fields = std::vector<field>();
+
+	std::string syntax;
+	for (const auto& command : Taiga::Command::all) {
+		fields_content[command.second.category] +=
+			fmt::format("`{}` ", command.first);
+	}
+	for (const auto& [category, content] : fields_content) {
+		fields.push_back(field().name(category).value(content));
+	}
+	embed.fields(fields);
+	obj.channel.create_message(aegis::create_message_t().embed(embed));
 }
 
 COMMAND(taiga) {
-	auto post = Taiga::Util::get_post(
-		"https://reddit.com/r/taiga/"
-		"random.json");
-
 	obj.channel.create_message(
-		post[0]["data"]["children"][0]["data"]["url"].get<std::string>());
+		Taiga::Util::get_random_reddit_post_url("taiga"));
 }
 
 COMMAND(toradora) {
-	auto post = Taiga::Util::get_post(
-		"https://reddit.com/r/toradora/"
-		"random.json");
-
 	obj.channel.create_message(
-		post[0]["data"]["children"][0]["data"]["url"].get<std::string>());
+		Taiga::Util::get_random_reddit_post_url("toradora"));
 }
 
 COMMAND(progress) {
@@ -89,22 +111,29 @@ COMMAND(money) {
 	const auto currency_x = Taiga::Util::String::to_upper(params.front());
 	const auto currency_y = Taiga::Util::String::to_upper(params.at(1));
 
-	float conversion_rate;
-	try {
-		conversion_rate = Taiga::Util::conversion_rate(
-			currency_x, currency_y, client->get_config().currency_conv_api_key);
-	} catch (const std::runtime_error& error) {
-		obj.channel.create_message(error.what());
-		client->get_bot()->log->error(error.what());
+	// just.. no
+	if (currency_x == currency_y) {
+		obj.channel.create_message("no");
 
 		return;
 	}
 
-	float amount;
-	try {
-		amount = Taiga::Util::String::string_to_number<float>(params.back());
-	} catch (const std::runtime_error& error) {
+	const auto _amount =
+		params.size() >= 3
+			? Taiga::Util::String::string_to_number<float>(params.at(2))
+			: 1;
+	if (!_amount) {
 		obj.channel.create_message("Invalid arguments.");
+	}
+	const auto& amount = _amount.value();
+
+	float conversion_rate;
+	try {
+		conversion_rate = Taiga::Util::conversion_rate(
+			currency_x, currency_y, client.get_config().currency_conv_api_key,
+			client.get_bot()->get_rest_controller());
+	} catch (const std::runtime_error& error) {
+		obj.channel.create_message(error.what());
 
 		return;
 	}
@@ -169,16 +198,20 @@ COMMAND(tz) {
 	auto id = !find_user ? obj.msg.author.id.get() : 0;
 
 	if (find_user) {
-		try {
-			const auto& member = Taiga::Util::Command::find_user(
-				params.front(), obj.channel.get_guild_id(), client);
-			member_name = member->get_name(obj.channel.get_guild_id()) == ""
-							  ? member->get_username()
-							  : member->get_name(obj.channel.get_guild_id());
-			id = member->get_id();
-		} catch (const std::runtime_error& error) {
-			obj.channel.create_message(error.what());
+		const auto& _member =
+			Taiga::Util::Command::find_user(params.front(), obj.msg, client);
+
+		if (!_member) {
+			obj.channel.create_message("Could not find member!");
+			return;
 		}
+
+		auto& member = *_member.value();
+
+		member_name = member.get_name(obj.channel.get_guild_id()) == ""
+						  ? member.get_username()
+						  : member.get_name(obj.channel.get_guild_id());
+		id = member.get_id();
 	}
 
 	bsoncxx::stdx::optional<bsoncxx::document::value> op_result =
@@ -199,23 +232,28 @@ COMMAND(tz) {
 	auto time = date::zoned_time{timezone, std::chrono::system_clock::now()};
 
 	obj.channel.create_message(
-		!find_user ? fmt::format("Your timezone is "
-								 "{}.\nYour time is: {}.",
-								 timezone, date::format("%F %H:%M", time))
-				   : fmt::format("{0}'s timezone is "
-								 "{1}.\n{0}'s time is {2}.",
-								 member_name, timezone,
-								 date::format("%F %H:%M", time)));
+		!find_user
+			? fmt::format("Your timezone is "
+						  "{}.\nYour time is: {}.",
+						  timezone, date::format("%F %H:%M", time))
+			// stupid ancient spdlog version; it bundles an ancient version
+			// of fmtlib as well, resulting in me having to do this..
+			: fmt::format("{0}'s timezone is "
+						  "{1}.\n{0}'s time is {2}.",
+						  member_name, timezone,
+						  date::format("%F %H:%M", time)));
 }
 
-void Taiga::Commands::add_commands(std::shared_ptr<spdlog::logger> log) {
-	ADD_COMMAND(help, {});
-	ADD_COMMAND(taiga, {});
-	ADD_COMMAND(toradora, {});
-	ADD_COMMAND(progress, {});
-	ADD_COMMAND(
-		money,
-		{{"currency to convert from"}, {"currency to convert to"}, {"amount"}});
-	ADD_COMMAND(set_tz, {{"timezone"}});
-	ADD_COMMAND(tz, {{"user", false}});
+void Taiga::Commands::add_commands(spdlog::logger& log) {
+	ADD_COMMAND(help, "General", {{"command", false}});
+	ADD_COMMAND_DESC(progress, "Progress to the end of the year", "General",
+					 {});
+	ADD_COMMAND(taiga, "Reddit", {});
+	ADD_COMMAND(toradora, "Reddit", {});
+	ADD_COMMAND(money, "Conversion",
+				{{"currency to convert from"},
+				 {"currency to convert to"},
+				 {"amount", false}});
+	ADD_COMMAND(set_tz, "Timezone", {{"timezone"}});
+	ADD_COMMAND(tz, "Timezone", {{"user", false}});
 }

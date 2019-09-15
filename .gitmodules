@@ -1,6 +1,9 @@
 [submodule "date"]
-	path = date
+	path = lib/date
 	url = https://github.com/HowardHinnant/date.git
 [submodule "cpr"]
-	path = cpr
+	path = lib/cpr
 	url = https://github.com/whoshuu/cpr.git
+[submodule "fifo_map"]
+	path = lib/fifo_map
+	url = https://github.com/nlohmann/fifo_map.git

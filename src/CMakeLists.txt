@@ -21,6 +21,7 @@ add_library(taiga
 
 target_include_directories(taiga PUBLIC
 	../include
+	${fifo_map_INCLUDE_DIRS}
 	${CPR_INCLUDE_DIRS}
 	${LIBMONGOCXX_INCLUDE_DIRS}
 	${Aegis_INCLUDE_DIRS}
@@ -29,6 +30,7 @@ target_include_directories(taiga PUBLIC
 target_link_libraries(taiga PUBLIC
 	date_interface
 	tz
+	fifo_map
 	${CPR_LIBRARIES}
 	${LIBMONGOCXX_LIBRARIES}
 	${Aegis_LIBRARIES}

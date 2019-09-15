@@ -4,35 +4,34 @@
 #include <taiga/util/StringUtil.hpp>
 
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
-	auto content = obj.msg.get_content();
-	auto prefix = get_config().prefix;
+	auto content{obj.msg.get_content()};
+	const auto& prefix = get_config().prefix;
 	if (!content.compare(0, prefix.size(), prefix)) {
-		auto parameters = Taiga::Util::String::split_command(
+		auto params = Taiga::Util::String::split_command(
 			content.erase(0, prefix.length()), prefix);
 		if (
 			// only allow if it has at least 1 parameter
-			parameters.size() <= 1 &&
+			params.size() <= 1 &&
 			// only allow if starts with prefix
-			parameters.front() != prefix) {
+			params.front() != prefix) {
 			return;
 		}
 
-		// remove the parameters as we go
-		parameters.pop_front();
+		// remove the params as we go
+		params.pop_front();
 		// make command name lower-case
-		parameters.front() = Taiga::Util::String::to_lower(parameters.front());
-		if (parameters.empty()) {
+		params.front() = Taiga::Util::String::to_lower(params.front());
+		if (params.empty()) {
 			return;
 		}
 
 		// get command
-		Taiga::Command::MappedCommands::iterator foundCommand =
-			Taiga::Command::all.find(parameters.front());
+		const auto& foundCommand = Taiga::Command::all.find(params.front());
 		if (foundCommand == Taiga::Command::all.end()) {
 			obj.channel.create_message("Command not found.");
 			return;
 		}
-		parameters.pop_front();
+		params.pop_front();
 
 		unsigned short requiredParams;
 		for (const auto& param : foundCommand->second.params) {
@@ -40,13 +39,13 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 				requiredParams++;
 			}
 		}
-		if (parameters.size() < requiredParams) {
+		if (params.size() < requiredParams) {
 			obj.channel.create_message("Too few arguments.");
 			return;
 		}
 
 		// call command
-		foundCommand->second.verb(obj, parameters, this);
+		foundCommand->second.verb(obj, params, *this);
 	}
 }
 

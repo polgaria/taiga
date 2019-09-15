@@ -1,24 +1,47 @@
 #include <taiga/Client.hpp>
 #include <taiga/util/CommandUtil.hpp>
+#include <taiga/util/StringUtil.hpp>
 
-std::unique_ptr<aegis::user>& Taiga::Util::Command::find_user(
+std::optional<aegis::user*> Taiga::Util::Command::find_user(
 	const std::string& name,
-	const aegis::snowflake& guild_id,
-	Taiga::Client* client) {
-	auto& m = client->get_bot()->get_user_mutex();
-	std::unique_lock<aegis::shared_mutex> l(m);
-	auto& users = client->get_bot()->get_user_map();
+	const aegis::gateway::objects::message& msg,
+	Taiga::Client& client) {
+	// in case a user is mentioned
+	if (!msg.mentions.empty()) {
+		const auto& member_id = msg.mentions.front();
+		const auto& member = client.get_bot()->find_user(member_id);
 
-	for (auto& [_id, member] : users) {
-		auto nickname{member->get_name(guild_id)};
-		auto matches_nickname = nickname == name;
-
-		if (member->get_username() == name || nickname == name) {
-			l.unlock();
+		// don't know how this could happen but let's be safe
+		if (member != nullptr) {
 			return member;
 		}
 	}
 
+	// if not, (try to) find by username/nickname
+	auto& m = client.get_bot()->get_user_mutex();
+	std::unique_lock<aegis::shared_mutex> l(m);
+	auto& users = client.get_bot()->get_user_map();
+
+	for (auto& [_id, member] : users) {
+		auto nickname{member->get_name(msg.get_guild_id())};
+		auto matches_nickname = nickname == name;
+
+		if (member->get_username() == name || nickname == name) {
+			l.unlock();
+
+			return member.get();
+		}
+	}
 	l.unlock();
-	throw std::runtime_error("Could not find member!");
+
+	// we assume it's an ID
+	const auto member_id = Taiga::Util::String::string_to_number<int64_t>(name);
+	if (member_id) {
+		const auto& member = client.get_bot()->find_user(member_id.value());
+		if (member != nullptr) {
+			return member;
+		}
+	}
+
+	return std::nullopt;
 }
