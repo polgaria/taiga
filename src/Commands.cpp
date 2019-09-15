@@ -273,7 +273,7 @@ COMMAND(tz) {
 
 // Miscellaneous
 COMMAND(rate) {
-	auto ratee = Taiga::Util::String::join(params, " ");
+	const auto ratee = Taiga::Util::String::join(params, " ");
 
 	const auto hash = std::hash<std::string>();
 	std::srand(hash(ratee));
@@ -314,7 +314,7 @@ void Taiga::Commands::add_commands(spdlog::logger& log) {
 	ADD_COMMAND_DESC(tz, "See your own or another user's timezone.", "Timezone",
 					 {{"user", false}});
 
-	ADD_COMMAND_DESC(rate, "Rates things on a scale of 1 to 10.",
+	ADD_COMMAND_DESC(rate, "Rates things on a scale of 0 to 10.",
 					 "Miscellaneous", {{"thing to rate"}});
 	ADD_COMMAND_DESC(progress, "Progress to the end of the year.",
 					 "Miscellaneous", {});
