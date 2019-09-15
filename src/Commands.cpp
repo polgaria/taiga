@@ -14,6 +14,10 @@
 #include <taiga/util/StringUtil.hpp>
 #include <taiga/util/Util.hpp>
 
+// TODO: proper modules (because having everything in one file is fucking
+// disgusting), current "categories" are just so the help is prettier and don't
+// really do anything
+
 #ifdef COMMAND
 #undef COMMAND
 #define COMMAND(name)                                                       \
@@ -30,6 +34,7 @@
 	log.info(fmt::format("Adding command {}", #name)); \
 	Taiga::Command::add_command({#name, category, __VA_ARGS__, name, desc})
 
+// General
 COMMAND(help) {
 	using aegis::gateway::objects::field;
 
@@ -87,6 +92,7 @@ COMMAND(help) {
 	obj.channel.create_message(aegis::create_message_t().embed(embed));
 }
 
+// Reddit
 COMMAND(taiga) {
 	obj.channel.create_message(
 		Taiga::Util::get_random_reddit_post_url("taiga"));
@@ -97,17 +103,7 @@ COMMAND(toradora) {
 		Taiga::Util::get_random_reddit_post_url("toradora"));
 }
 
-COMMAND(progress) {
-	auto percent = Taiga::Util::year_progress();
-	std::string msg;
-
-	for (auto progress = 0; progress < 20; progress++) {
-		msg += progress < percent / 5 ? "▓" : "░";
-	}
-
-	obj.channel.create_message(fmt::format("{} {:.2f}%", msg, percent));
-}
-
+// Conversion
 COMMAND(money) {
 	const auto currency_x = Taiga::Util::String::to_upper(params.front());
 	const auto currency_y = Taiga::Util::String::to_upper(params.at(1));
@@ -145,6 +141,35 @@ COMMAND(money) {
 		"{:.2f} {} is worth {:.2f} {}", amount, currency_x, worth, currency_y));
 }
 
+COMMAND(mbps) {
+	const auto _value =
+		params.size() != 0
+			? Taiga::Util::String::string_to_number<float>(params.front())
+			: 1;
+	if (!_value) {
+		obj.channel.create_message("Invalid arguments.");
+	}
+	const auto& value = _value.value();
+
+	obj.channel.create_message(
+		fmt::format("{}Mb/s is {:.2f}Mbps", value, value * 8));
+}
+
+COMMAND(mbs) {
+	const auto _value =
+		params.size() != 0
+			? Taiga::Util::String::string_to_number<float>(params.front())
+			: 1;
+	if (!_value) {
+		obj.channel.create_message("Invalid arguments.");
+	}
+	const auto& value = _value.value();
+
+	obj.channel.create_message(
+		fmt::format("{}Mbps is {:.2f}Mb/s", value, value / 8));
+}
+
+// Timezone
 COMMAND(set_tz) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
@@ -245,8 +270,9 @@ COMMAND(tz) {
 						  date::format("%F %H:%M", time)));
 }
 
+// Miscellaneous
 COMMAND(rate) {
-	std::string thing_to_rate = Taiga::Util::String::join(params, " ");
+	auto thing_to_rate = Taiga::Util::String::join(params, " ");
 
 	const auto hash = std::hash<std::string>();
 	std::srand(hash(thing_to_rate));
@@ -256,11 +282,20 @@ COMMAND(rate) {
 					std::rand() / ((RAND_MAX + 1u) / 10)));
 }
 
+COMMAND(progress) {
+	auto percent = Taiga::Util::year_progress();
+	std::string msg;
+
+	for (auto progress = 0; progress < 20; progress++) {
+		msg += progress < percent / 5 ? "▓" : "░";
+	}
+
+	obj.channel.create_message(fmt::format("{} {:.2f}%", msg, percent));
+}
+
 void Taiga::Commands::add_commands(spdlog::logger& log) {
 	ADD_COMMAND_DESC(help, "The command you're seeing right now.", "General",
 					 {{"command", false}});
-	ADD_COMMAND_DESC(progress, "Progress to the end of the year.", "General",
-					 {});
 
 	ADD_COMMAND_DESC(taiga, "Sends a random image from r/taiga", "Reddit", {});
 	ADD_COMMAND_DESC(toradora, "Sends a random image from r/toradora", "Reddit",
@@ -270,6 +305,10 @@ void Taiga::Commands::add_commands(spdlog::logger& log) {
 				{{"currency to convert from"},
 				 {"currency to convert to"},
 				 {"amount", false}});
+	ADD_COMMAND_DESC(mbps, "Converts Mb/s to Mbps.", "Conversion",
+					 {{"value", false}});
+	ADD_COMMAND_DESC(mbs, "Converts Mbps to Mb/s.", "Conversion",
+					 {{"value", false}});
 
 	ADD_COMMAND_DESC(set_tz, "Set your timezone.", "Timezone", {{"timezone"}});
 	ADD_COMMAND_DESC(tz, "See your own or another user's timezone.", "Timezone",
@@ -277,4 +316,6 @@ void Taiga::Commands::add_commands(spdlog::logger& log) {
 
 	ADD_COMMAND_DESC(rate, "Rates things on a scale of 1 to 10.",
 					 "Miscellaneous", {{"thing to rate"}});
+	ADD_COMMAND_DESC(progress, "Progress to the end of the year.",
+					 "Miscellaneous", {});
 }
