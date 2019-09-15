@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <fifo_map.hpp>
+#include <functional>
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
 #include <taiga/Client.hpp>
@@ -69,12 +70,12 @@ COMMAND(help) {
 
 		return;
 	}
+
 	auto embed{
 		aegis::gateway::objects::embed().title("**Commands**").color(0x3498DB)};
 	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
 	auto fields = std::vector<field>();
 
-	std::string syntax;
 	for (const auto& command : Taiga::Command::all) {
 		fields_content[command.second.category] +=
 			fmt::format("`{}` ", command.first);
@@ -82,6 +83,7 @@ COMMAND(help) {
 	for (const auto& [category, content] : fields_content) {
 		fields.push_back(field().name(category).value(content));
 	}
+
 	embed.fields(fields);
 	obj.channel.create_message(aegis::create_message_t().embed(embed));
 }
@@ -244,16 +246,36 @@ COMMAND(tz) {
 						  date::format("%F %H:%M", time)));
 }
 
+COMMAND(rate) {
+	std::string thing_to_rate = Taiga::Util::String::join(params, " ");
+
+	const auto hash = std::hash<std::string>();
+	std::srand(hash(thing_to_rate));
+
+	obj.channel.create_message(
+		fmt::format("I'd rate {} a {}/10", thing_to_rate,
+					std::rand() / ((RAND_MAX + 1u) / 10)));
+}
+
 void Taiga::Commands::add_commands(spdlog::logger& log) {
-	ADD_COMMAND(help, "General", {{"command", false}});
-	ADD_COMMAND_DESC(progress, "Progress to the end of the year", "General",
+	ADD_COMMAND_DESC(help, "The command you're seeing right now.", "General",
+					 {{"command", false}});
+	ADD_COMMAND_DESC(progress, "Progress to the end of the year.", "General",
 					 {});
-	ADD_COMMAND(taiga, "Reddit", {});
-	ADD_COMMAND(toradora, "Reddit", {});
+
+	ADD_COMMAND_DESC(taiga, "Sends a random image from r/taiga", "Reddit", {});
+	ADD_COMMAND_DESC(toradora, "Sends a random image from r/toradora", "Reddit",
+					 {});
+
 	ADD_COMMAND(money, "Conversion",
 				{{"currency to convert from"},
 				 {"currency to convert to"},
 				 {"amount", false}});
-	ADD_COMMAND(set_tz, "Timezone", {{"timezone"}});
-	ADD_COMMAND(tz, "Timezone", {{"user", false}});
+
+	ADD_COMMAND_DESC(set_tz, "Set your timezone.", "Timezone", {{"timezone"}});
+	ADD_COMMAND_DESC(tz, "See your own or another user's timezone.", "Timezone",
+					 {{"user", false}});
+
+	ADD_COMMAND_DESC(rate, "Rates things on a scale of 1 to 10.",
+					 "Miscellaneous", {{"thing to rate"}});
 }

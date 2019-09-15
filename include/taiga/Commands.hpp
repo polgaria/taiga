@@ -10,12 +10,17 @@
 
 namespace Taiga::Commands {
 COMMAND(help)
+COMMAND(progress)
+
 COMMAND(taiga)
 COMMAND(toradora)
-COMMAND(progress)
+
 COMMAND(money)
+
 COMMAND(set_tz)
 COMMAND(tz)
+
+COMMAND(rate)
 
 void add_commands(spdlog::logger& log);
 }  // namespace Taiga::Commands
