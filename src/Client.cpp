@@ -8,6 +8,7 @@
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 	auto content{obj.msg.get_content()};
 	const auto& prefix = get_config().prefix;
+	// check if it starts with the configured prefix
 	if (!content.compare(0, prefix.size(), prefix)) {
 		auto params = Taiga::Util::String::split_command(
 			content.erase(0, prefix.length()), prefix);
@@ -35,6 +36,7 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 		}
 		params.pop_front();
 
+		// check how many parameters are required
 		unsigned short required_params;
 		for (const auto& param : found_command->second.params) {
 			if (param.required) {
@@ -42,7 +44,7 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 			}
 		}
 		if (params.size() < required_params) {
-			obj.channel.create_message("Too few arguments.");
+			obj.channel.create_message("Too few parameters.");
 			return;
 		}
 

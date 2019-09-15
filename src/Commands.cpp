@@ -81,6 +81,7 @@ COMMAND(help) {
 	auto fields = std::vector<field>();
 
 	for (const auto& command : Taiga::Command::all) {
+		// should i be doing this?? there's probably a faster way.. eh whatever
 		fields_content[command.second.category] +=
 			fmt::format("`{}` ", command.first);
 	}
@@ -120,7 +121,7 @@ COMMAND(money) {
 			? Taiga::Util::String::string_to_number<float>(params.at(2))
 			: 1;
 	if (!_amount) {
-		obj.channel.create_message("Invalid arguments.");
+		obj.channel.create_message("Invalid parameters.");
 	}
 	const auto& amount = _amount.value();
 
@@ -147,7 +148,7 @@ COMMAND(mbps) {
 			? Taiga::Util::String::string_to_number<float>(params.front())
 			: 1;
 	if (!_value) {
-		obj.channel.create_message("Invalid arguments.");
+		obj.channel.create_message("Invalid parameters.");
 	}
 	const auto& value = _value.value();
 
@@ -161,7 +162,7 @@ COMMAND(mbs) {
 			? Taiga::Util::String::string_to_number<float>(params.front())
 			: 1;
 	if (!_value) {
-		obj.channel.create_message("Invalid arguments.");
+		obj.channel.create_message("Invalid parameters.");
 	}
 	const auto& value = _value.value();
 
@@ -272,14 +273,13 @@ COMMAND(tz) {
 
 // Miscellaneous
 COMMAND(rate) {
-	auto thing_to_rate = Taiga::Util::String::join(params, " ");
+	auto ratee = Taiga::Util::String::join(params, " ");
 
 	const auto hash = std::hash<std::string>();
-	std::srand(hash(thing_to_rate));
+	std::srand(hash(ratee));
 
-	obj.channel.create_message(
-		fmt::format("I'd rate {} a {}/10", thing_to_rate,
-					std::rand() / ((RAND_MAX + 1u) / 10)));
+	obj.channel.create_message(fmt::format(
+		"I'd rate {} a {}/10", ratee, std::rand() / ((RAND_MAX + 1u) / 10)));
 }
 
 COMMAND(progress) {

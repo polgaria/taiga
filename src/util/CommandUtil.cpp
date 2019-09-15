@@ -43,5 +43,6 @@ std::optional<aegis::user*> Taiga::Util::Command::find_user(
 		}
 	}
 
+	// finally, if nothing is found; nullopt
 	return std::nullopt;
 }
