@@ -144,7 +144,7 @@ COMMAND(money) {
 
 COMMAND(mbps) {
 	const auto _value =
-		params.size() != 0
+		!params.empty()
 			? Taiga::Util::String::string_to_number<float>(params.front())
 			: 1;
 	if (!_value) {
@@ -158,7 +158,7 @@ COMMAND(mbps) {
 
 COMMAND(mbs) {
 	const auto _value =
-		params.size() != 0
+		!params.empty()
 			? Taiga::Util::String::string_to_number<float>(params.front())
 			: 1;
 	if (!_value) {
@@ -182,8 +182,22 @@ COMMAND(set_tz) {
 	auto db = mongodb_client["taiga"];
 	auto timezones = db["timezones"];
 
-	auto timezone = params.front();
 	date::zoned_time<std::chrono::nanoseconds, const date::time_zone*> time;
+
+	// i really don't wanna parse through the timezone DB.. it's 15-30x slower
+	// than this
+	auto split_timezone = Taiga::Util::String::split(params.front(), '/');
+	std::string timezone;
+	if (split_timezone.size() == 1) {
+		timezone = Taiga::Util::String::to_upper(split_timezone.front());
+	} else {
+		for (auto& part : split_timezone) {
+			part = Taiga::Util::String::to_lower(part);
+			part[0] = std::towupper(static_cast<unsigned char>(part[0]));
+		}
+		timezone = Taiga::Util::String::join(split_timezone, "/");
+	}
+
 	try {
 		time = date::zoned_time{timezone, std::chrono::system_clock::now()};
 	} catch (const std::runtime_error& error) {
@@ -216,7 +230,7 @@ COMMAND(tz) {
 
 	mongocxx::client mongodb_client{mongocxx::uri{}};
 
-	auto find_user = params.size() != 0;
+	auto find_user = !params.empty();
 
 	auto db = mongodb_client["taiga"];
 	auto timezones = db["timezones"];
@@ -224,16 +238,18 @@ COMMAND(tz) {
 	std::string member_name{};
 	auto id = !find_user ? obj.msg.author.id.get() : 0;
 
+	const auto user_to_find = Taiga::Util::String::join(params, " ");
+
 	if (find_user) {
 		const auto& _member =
-			Taiga::Util::Command::find_user(params.front(), obj.msg, client);
+			Taiga::Util::Command::find_user(user_to_find, obj.msg, client);
 
 		if (!_member) {
 			obj.channel.create_message("Could not find member!");
 			return;
 		}
 
-		auto& member = *_member.value();
+		auto& member = _member.value().get();
 
 		member_name = member.get_name(obj.channel.get_guild_id()) == ""
 						  ? member.get_username()
@@ -241,8 +257,7 @@ COMMAND(tz) {
 		id = member.get_id();
 	}
 
-	bsoncxx::stdx::optional<bsoncxx::document::value> op_result =
-		timezones.find_one(document{} << "id" << id << finalize);
+	auto op_result = timezones.find_one(document{} << "id" << id << finalize);
 	if (!op_result) {
 		obj.channel.create_message(!find_user
 									   ? "Your timezone has not "
@@ -253,22 +268,64 @@ COMMAND(tz) {
 		return;
 	}
 
-	auto result = op_result->view();
-
-	auto timezone = result["timezone"].get_utf8().value.to_string();
+	auto timezone = op_result->view()["timezone"].get_utf8().value.to_string();
 	auto time = date::zoned_time{timezone, std::chrono::system_clock::now()};
 
-	obj.channel.create_message(
-		!find_user
-			? fmt::format("Your timezone is "
-						  "{}.\nYour time is: {}.",
-						  timezone, date::format("%F %H:%M", time))
-			// stupid ancient spdlog version; it bundles an ancient version
-			// of fmtlib as well, resulting in me having to do this..
-			: fmt::format("{0}'s timezone is "
-						  "{1}.\n{0}'s time is {2}.",
-						  member_name, timezone,
-						  date::format("%F %H:%M", time)));
+	auto output = fmt::format(
+		"Your timezone is "
+		"{}.\nYour time is: {}.",
+		timezone, date::format("%F %H:%M", time));
+	if (find_user) {
+		op_result = timezones.find_one(
+			document{} << "id" << obj.msg.get_author_id().get() << finalize);
+		if (op_result) {
+			auto author_timezone =
+				op_result->view()["timezone"].get_utf8().value.to_string();
+			auto author_time = date::zoned_time{
+				author_timezone, std::chrono::system_clock::now()};
+
+			const auto time_difference_string = date::format(
+				"%H", author_time.get_local_time() - time.get_local_time());
+			// if there's even any difference
+			if (time_difference_string != "-00") {
+				// then we convert the difference to an integer
+				const auto _time_difference =
+					Taiga::Util::String::string_to_number<int>(
+						time_difference_string);
+				if (!_time_difference) {
+					obj.channel.create_message("Something went wrong.");
+					client.get_bot()->log->error(
+						"Somehow failed to convert time difference to an "
+						"integer.");
+
+					return;
+				}
+				const auto time_difference = _time_difference.value();
+
+				// are we behind or ahead?
+				const auto is_behind = time_difference < 0;
+
+				// stupid ancient spdlog version; it bundles an ancient version
+				// of fmtlib as well, resulting in having to do this..
+				output = fmt::format(
+					"{0}'s timezone is "
+					"{1}.\n{0}'s time is {2}.\nYou are {3} hours {4} them.",
+					member_name, timezone, date::format("%F %H:%M", time),
+					is_behind ? -time_difference : time_difference,
+					is_behind ? "behind" : "ahead of");
+			} else {
+				// no difference; we don't include the behind/ahead text
+				// i also have to do the fmtlib bullshit for this to work
+				// thanks aegis.cpp
+				output = fmt::format(
+					"{0}'s timezone is "
+					"{1}.\n{0}'s time is {2}.",
+					member_name, timezone, date::format("%F %H:%M", time));
+			}
+		}
+	}
+
+	obj.channel.create_message(output);
 }
 
 // Miscellaneous

@@ -2,10 +2,10 @@
 #include <taiga/util/CommandUtil.hpp>
 #include <taiga/util/StringUtil.hpp>
 
-std::optional<aegis::user*> Taiga::Util::Command::find_user(
-	const std::string& name,
-	const aegis::gateway::objects::message& msg,
-	Taiga::Client& client) {
+std::optional<std::reference_wrapper<aegis::user>>
+Taiga::Util::Command::find_user(const std::string& name,
+								const aegis::gateway::objects::message& msg,
+								Taiga::Client& client) {
 	// in case a user is mentioned
 	if (!msg.mentions.empty()) {
 		const auto& member_id = msg.mentions.front();
@@ -13,7 +13,7 @@ std::optional<aegis::user*> Taiga::Util::Command::find_user(
 
 		// don't know how this could happen but let's be safe
 		if (member != nullptr) {
-			return member;
+			return *member;
 		}
 	}
 
@@ -29,7 +29,7 @@ std::optional<aegis::user*> Taiga::Util::Command::find_user(
 		if (member->get_username() == name || nickname == name) {
 			l.unlock();
 
-			return member.get();
+			return *member.get();
 		}
 	}
 	l.unlock();
@@ -39,7 +39,7 @@ std::optional<aegis::user*> Taiga::Util::Command::find_user(
 	if (member_id) {
 		const auto& member = client.get_bot()->find_user(member_id.value());
 		if (member != nullptr) {
-			return member;
+			return *member;
 		}
 	}
 

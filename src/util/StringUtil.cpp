@@ -1,12 +1,12 @@
 #include <sstream>
 #include <taiga/util/StringUtil.hpp>
 
-std::deque<std::string> Taiga::Util::String::split_by_space(
-	const std::string& source) {
+std::deque<std::string> Taiga::Util::String::split(const std::string& source,
+												   const char& delim) {
 	std::stringstream ss(source);
 	std::string item;
 	std::deque<std::string> target;
-	while (std::getline(ss, item, ' ')) {
+	while (std::getline(ss, item, delim)) {
 		if (!item.empty()) {
 			target.push_back(item);
 		}
@@ -18,7 +18,7 @@ std::deque<std::string> Taiga::Util::String::split_by_space(
 std::deque<std::string> Taiga::Util::String::split_command(
 	const std::string& source,
 	const std::string& prefix) {
-	auto arguments = split_by_space(source);
+	auto arguments = Taiga::Util::String::split(source, ' ');
 	arguments.push_front(prefix);
 
 	return arguments;
