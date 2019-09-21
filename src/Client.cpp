@@ -3,8 +3,6 @@
 #include <taiga/Command.hpp>
 #include <taiga/util/StringUtil.hpp>
 
-// this fucking thing rarely fails and spits out "Too few arguments" when it
-// shouldn't; don't know why, haven't had the chance to debug it
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 	// don't want it to be responding to other bots
 	if (obj.msg.get_user().is_bot()) {
@@ -41,7 +39,7 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 		params.pop_front();
 
 		// check how many parameters are required
-		unsigned short required_params;
+		unsigned short required_params = 0;
 		for (const auto& param : found_command->second.params) {
 			if (param.required) {
 				required_params++;
