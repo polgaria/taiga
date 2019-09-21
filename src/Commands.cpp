@@ -3,7 +3,6 @@
 #include <spdlog/spdlog.h>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <fifo_map.hpp>
-#include <functional>
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
 #include <taiga/Client.hpp>
@@ -271,10 +270,7 @@ COMMAND(tz) {
 	auto timezone = op_result->view()["timezone"].get_utf8().value.to_string();
 	auto time = date::zoned_time{timezone, std::chrono::system_clock::now()};
 
-	auto output = fmt::format(
-		"Your timezone is "
-		"{}.\nYour time is: {}.",
-		timezone, date::format("%F %H:%M", time));
+	std::string output;
 	if (find_user) {
 		op_result = timezones.find_one(
 			document{} << "id" << obj.msg.get_author_id().get() << finalize);
@@ -283,8 +279,11 @@ COMMAND(tz) {
 				op_result->view()["timezone"].get_utf8().value.to_string();
 			auto author_time = date::zoned_time{
 				author_timezone, std::chrono::system_clock::now()};
+			// if not done, the time difference can end up being 00:59 and not
+			// an hour
+			time = date::zoned_time{timezone, std::chrono::system_clock::now()};
 
-			const auto time_difference_string = date::format(
+			auto time_difference_string = date::format(
 				"%H", author_time.get_local_time() - time.get_local_time());
 			// if there's even any difference
 			if (time_difference_string != "-00") {
@@ -309,9 +308,10 @@ COMMAND(tz) {
 				// of fmtlib as well, resulting in having to do this..
 				output = fmt::format(
 					"{0}'s timezone is "
-					"{1}.\n{0}'s time is {2}.\nYou are {3} hours {4} them.",
+					"{1}.\n{0}'s time is {2}.\nYou are {3} {4} {5} them.",
 					member_name, timezone, date::format("%F %H:%M", time),
-					is_behind ? -time_difference : time_difference,
+					std::abs(time_difference),
+					std::abs(time_difference) != 1 ? "hours" : "hour",
 					is_behind ? "behind" : "ahead of");
 			} else {
 				// no difference; we don't include the behind/ahead text
@@ -323,6 +323,11 @@ COMMAND(tz) {
 					member_name, timezone, date::format("%F %H:%M", time));
 			}
 		}
+	} else {
+		output = fmt::format(
+			"Your timezone is "
+			"{}.\nYour time is: {}.",
+			timezone, date::format("%F %H:%M", time));
 	}
 
 	obj.channel.create_message(output);
@@ -350,6 +355,11 @@ COMMAND(progress) {
 	obj.channel.create_message(fmt::format("{} {:.2f}%", msg, percent));
 }
 
+COMMAND(kva) {
+	obj.channel.create_message(
+		"ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку");
+}
+
 void Taiga::Commands::add_commands(spdlog::logger& log) {
 	ADD_COMMAND_DESC(help, "The command you're seeing right now.", "General",
 					 {{"command", false}});
@@ -375,4 +385,5 @@ void Taiga::Commands::add_commands(spdlog::logger& log) {
 					 "Miscellaneous", {{"thing to rate"}});
 	ADD_COMMAND_DESC(progress, "Progress to the end of the year.",
 					 "Miscellaneous", {});
+	ADD_COMMAND(kva, "Micellaneous", {});
 }

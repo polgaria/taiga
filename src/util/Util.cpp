@@ -9,8 +9,8 @@
 std::string Taiga::Util::get_random_reddit_post_url(
 	const std::string& subreddit) {
 	auto post_json_string =
-		// why not aegis::rest::rest_controller? well, it can't handle
-		// redirects. so, cpr it is (as much as i don't want to use it)
+		// why not aegis::rest::rest_controller? it can't handle
+		// redirects; therefore, cpr it is (as much as i don't want to use it)
 		cpr::Get(cpr::Url{fmt::format("https://old.reddit.com/r/{}/random.json",
 									  subreddit)},
 				 cpr::Header{{"User-Agent", "taiga"}})

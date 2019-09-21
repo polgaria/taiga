@@ -6,6 +6,10 @@
 // this fucking thing rarely fails and spits out "Too few arguments" when it
 // shouldn't; don't know why, haven't had the chance to debug it
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
+	// don't want it to be responding to other bots
+	if (obj.msg.get_user().is_bot()) {
+		return;
+	}
 	auto content{obj.msg.get_content()};
 	const auto& prefix = get_config().prefix;
 	// check if it starts with the configured prefix

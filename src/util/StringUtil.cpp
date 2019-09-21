@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <sstream>
 #include <taiga/util/StringUtil.hpp>
 
@@ -26,18 +27,18 @@ std::deque<std::string> Taiga::Util::String::split_command(
 
 std::string Taiga::Util::String::to_upper(const std::string& source) {
 	auto string_upper{source};
-	for (auto& c : string_upper) {
-		c = toupper(static_cast<unsigned char>(c));
-	}
+	std::transform(string_upper.begin(), string_upper.end(),
+				   string_upper.begin(),
+				   [](unsigned char c) { return std::towupper(c); });
 
 	return string_upper;
 }
 
 std::string Taiga::Util::String::to_lower(const std::string& source) {
 	auto string_lower{source};
-	for (auto& c : string_lower) {
-		c = tolower(static_cast<unsigned char>(c));
-	}
+	std::transform(string_lower.begin(), string_lower.end(),
+				   string_lower.begin(),
+				   [](unsigned char c) { return std::towlower(c); });
 
 	return string_lower;
 }

@@ -24,6 +24,8 @@ COMMAND(tz)
 COMMAND(rate)
 COMMAND(progress)
 
+COMMAND(kva)
+
 void add_commands(spdlog::logger& log);
 }  // namespace Taiga::Commands
 
