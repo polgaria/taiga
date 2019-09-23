@@ -2,6 +2,7 @@
 #define COMMANDUTIL_HPP
 
 #include <aegis.hpp>
+#include <taiga/Client.hpp>
 
 namespace Taiga::Util::Command {
 std::optional<std::reference_wrapper<aegis::user>> find_user(

@@ -10,9 +10,9 @@
 #include <taiga/Config.hpp>
 
 namespace Taiga::Command {
-using Verb = std::function<void(aegis::gateway::events::message_create&,
-								const std::deque<std::string>&,
-								Taiga::Client&)>;
+using Verb = std::function<void(aegis::gateway::events::message_create& obj,
+								const std::deque<std::string>& params,
+								Taiga::Client& client)>;
 
 struct Parameter {
 	std::string name;
@@ -27,10 +27,10 @@ struct Command {
 };
 
 using MappedCommands = nlohmann::fifo_map<std::string, Command>;
-using MappedCommand = MappedCommands::value_type;
 extern MappedCommands all;
 
 void add_command(Command command);
+void add_commands(spdlog::logger& log);
 }  // namespace Taiga::Command
 
 #endif

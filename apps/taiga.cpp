@@ -1,8 +1,8 @@
 #include <aegis.hpp>
 #include <mongocxx/instance.hpp>
 #include <taiga/Client.hpp>
-#include <taiga/Commands.hpp>
 #include <taiga/Config.hpp>
+#include <taiga/command/Command.hpp>
 
 int main() {
 	aegis::core bot(spdlog::level::trace);
@@ -13,7 +13,7 @@ int main() {
 
 	bot.set_on_message_create(std::bind(&Taiga::Client::message_create, &client,
 										std::placeholders::_1));
-	Taiga::Commands::add_commands(*bot.log);
+	Taiga::Command::add_commands(*bot.log);
 
 	mongocxx::instance instance{};
 

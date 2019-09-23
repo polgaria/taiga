@@ -46,9 +46,9 @@ float Taiga::Util::year_progress() {
 
 float Taiga::Util::conversion_rate(const std::string& from,
 								   const std::string& to,
-								   const std::string& api_key,
+								   const std::optional<std::string>& api_key,
 								   aegis::rest::rest_controller& rc) {
-	if (api_key.empty()) {
+	if (!api_key.has_value()) {
 		throw std::runtime_error("Currency API key not set.");
 	}
 	auto currency_to_currency = fmt::format("{}_{}", from, to);
@@ -57,7 +57,7 @@ float Taiga::Util::conversion_rate(const std::string& from,
 	aegis::rest::request_params rp;
 	rp.host = "free.currconv.com";
 	rp.path = fmt::format("/api/v7/convert?q={}&compact=ultra&apiKey={}",
-						  currency_to_currency, api_key);
+						  currency_to_currency, api_key.value());
 	rp.method = aegis::rest::Get;
 	rp.headers = {"User-Agent: taiga"};
 
@@ -69,22 +69,18 @@ float Taiga::Util::conversion_rate(const std::string& from,
 		}
 		case aegis::rest::http_code::too_many_requests: {
 			throw std::runtime_error("Ratelimited.");
-			break;
 		}
 		case aegis::rest::http_code::bad_request: {
 			throw std::runtime_error("Invalid API key.");
-			break;
 		}
 		case aegis::rest::http_code::service_unavailable:
 		case aegis::rest::http_code::internal_server_error:
 		case aegis::rest::http_code::server_down: {
 			throw std::runtime_error(
 				"Currency Conversion API is down. Please try again later.");
-			break;
 		}
 		default: {
 			throw std::runtime_error("Unknown error.");
-			break;
 		}
 	}
 

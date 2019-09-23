@@ -1,6 +1,6 @@
 #include <memory>
 #include <taiga/Client.hpp>
-#include <taiga/Command.hpp>
+#include <taiga/command/Command.hpp>
 #include <taiga/util/StringUtil.hpp>
 
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
@@ -64,10 +64,10 @@ void Taiga::Client::load_config() {
 		throw std::runtime_error(error_message);                     \
 	}
 
-#define OPTIONAL_ENTRY(name)                                              \
-	conf.name = json.find(#name) != json.end() && json[#name].is_string() \
-					? json[#name].get<std::string>()                      \
-					: "";
+#define OPTIONAL_ENTRY(name)                                         \
+	if (json.find(#name) != json.end() && json[#name].is_string()) { \
+		conf.name = json[#name].get<std::string>();                  \
+	}
 
 	std::ifstream i("config.json");
 
@@ -81,8 +81,10 @@ void Taiga::Client::load_config() {
 	i.close();
 
 	Taiga::Config::Config conf;
-	ENTRY(prefix, "Invalid config: The bot prefix is missing.");
-	OPTIONAL_ENTRY(currency_conv_api_key);
+    ENTRY(prefix, "Invalid config: The bot prefix is missing.")
+    ENTRY(name, "Invalid config: The bot name is missing.")
+    OPTIONAL_ENTRY(currency_conv_api_key)
+    OPTIONAL_ENTRY(git_repo)
 
 	this->config = conf;
 }

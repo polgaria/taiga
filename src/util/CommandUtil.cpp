@@ -24,7 +24,6 @@ Taiga::Util::Command::find_user(const std::string& name,
 
 	for (auto& [_id, member] : users) {
 		auto nickname{member->get_name(msg.get_guild_id())};
-		auto matches_nickname = nickname == name;
 
 		if (member->get_username() == name || nickname == name) {
 			l.unlock();

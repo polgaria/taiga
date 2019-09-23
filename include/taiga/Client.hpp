@@ -8,7 +8,7 @@ namespace Taiga {
 class Client {
    public:
 	void load_config();
-	Taiga::Config::Config get_config() { return this->config; };
+    Taiga::Config::Config get_config() { return this->config; }
 
 	void set_bot(aegis::core& _bot) { this->bot = &_bot; }
 	aegis::core* get_bot() { return bot; }
