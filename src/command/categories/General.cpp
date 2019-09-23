@@ -69,16 +69,23 @@ COMMAND(help) {
 COMMAND(info) {
 	using aegis::gateway::objects::field;
 
-	auto embed = aegis::gateway::objects::embed()
-					 .title(client.get_config().name)
-					 .description(fmt::format(
-						 "{}\nMemory usage: **{}MB**",
-						 client.get_config().git_repo.has_value()
-							 ? fmt::format("[Source code]({})\n",
-										   client.get_config().git_repo.value())
-							 : "",
-						 aegis::utility::getCurrentRSS() / (1024 * 1024)))
-					 .color(rand() % 0xFFFFFF);
+	const auto& bot_avatar =
+		client.get_bot()->find_user(client.get_bot()->get_id())->get_avatar();
+
+	auto embed =
+		aegis::gateway::objects::embed()
+			.title(client.get_config().name)
+			.description(fmt::format(
+				"{}\nMemory usage: **{}MB**",
+				client.get_config().git_repo.has_value()
+					? fmt::format("[Source code]({})\n",
+								  client.get_config().git_repo.value())
+					: "",
+				aegis::utility::getCurrentRSS() / (1024 * 1024)))
+			.color(rand() % 0xFFFFFF)
+			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
+				"https://cdn.discordapp.com/avatars/{}/{}.webp?size=1024",
+				client.get_bot()->get_id().get(), bot_avatar)});
 	embed.fields(
 		{field()
 			 .name("Members")
