@@ -1,7 +1,7 @@
 #include <memory>
 #include <taiga/Client.hpp>
 #include <taiga/command/Command.hpp>
-#include <taiga/util/StringUtil.hpp>
+#include <taiga/util/String.hpp>
 
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 	// don't want it to be responding to other bots
@@ -31,16 +31,26 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 		}
 
 		// get command
-		const auto& found_command = Taiga::Command::all.find(params.front());
-		if (found_command == Taiga::Command::all.end()) {
+		const auto& found_command = Taiga::Commands::all.find(params.front());
+		if (found_command == Taiga::Commands::all.end()) {
 			obj.channel.create_message("Command not found.");
 			return;
 		}
 		params.pop_front();
 
+		// if the command is owner-only
+		if (found_command->second.owner_only()) {
+			// check if user is the bot owner
+			const auto& user_id = obj.msg.get_user().get_id().get();
+			if (fmt::format("{}", user_id) != config.owner_id.value_or("")) {
+				obj.channel.create_message("You are not the bot's owner!");
+				return;
+			}
+		}
+
 		// check how many parameters are required
 		unsigned short required_params = 0;
-		for (const auto& param : found_command->second.params) {
+		for (const auto& param : found_command->second.params()) {
 			if (param.required) {
 				required_params++;
 			}
@@ -51,7 +61,7 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 		}
 
 		// call command
-		found_command->second.verb(obj, params, *this);
+		found_command->second.function()(obj, params, *this);
 	}
 }
 
@@ -81,10 +91,11 @@ void Taiga::Client::load_config() {
 	i.close();
 
 	Taiga::Config::Config conf;
-    ENTRY(prefix, "Invalid config: The bot prefix is missing.")
-    ENTRY(name, "Invalid config: The bot name is missing.")
-    OPTIONAL_ENTRY(currency_conv_api_key)
-    OPTIONAL_ENTRY(git_repo)
+	ENTRY(prefix, "Invalid config: The bot prefix is missing.")
+	ENTRY(name, "Invalid config: The bot name is missing.")
+	OPTIONAL_ENTRY(currency_conv_api_key)
+	OPTIONAL_ENTRY(git_repo)
+	OPTIONAL_ENTRY(owner_id)
 
 	this->config = conf;
 }

@@ -1,8 +1,8 @@
 #include <aegis.hpp>
 #include <taiga/command/Command.hpp>
 #include <taiga/command/categories/Miscellaneous.hpp>
-#include <taiga/util/StringUtil.hpp>
-#include <taiga/util/Util.hpp>
+#include <taiga/util/String.hpp>
+#include <taiga/util/Various.hpp>
 
 Taiga::Command::Categories::Miscellaneous::Miscellaneous(
 	const std::string& _name)
@@ -20,7 +20,7 @@ COMMAND(rate) {
 }
 
 COMMAND(progress) {
-	auto percent = Taiga::Util::year_progress();
+	auto percent = Taiga::Util::Various::year_progress();
 	std::string msg;
 
 	for (auto progress = 0; progress < 20; progress++) {
@@ -35,9 +35,40 @@ COMMAND(kva) {
 		"ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку");
 }
 
+COMMAND(_kill) {
+	obj.channel.create_message("bye");
+	client.get_bot()->shutdown();
+}
+
 void Taiga::Command::Categories::Miscellaneous::init(spdlog::logger& log) {
-	ADD_COMMAND_DESC(rate, "Rates things on a scale of 0 to 10.",
-					 {{"thing to rate"}});
-	ADD_COMMAND_DESC(progress, "Progress to the end of the year.", {});
-	ADD_COMMAND(kva, {});
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("rate")
+			.description("Rates things on a scale of 0 to 10.")
+			.params({{"ratee"}})
+			.function(rate)
+			.category(this->name),
+		log);
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("progress")
+			.description("Progress to the end of the year.")
+			.function(progress)
+			.category(this->name),
+		log);
+	// clang-format off
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("kva")
+			.function(kva)
+			.category(this->name),
+		log);
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("kill")
+			.owner_only(true)
+			.function(_kill)
+			.category(this->name),
+		log);
+	// clang-format on
 }

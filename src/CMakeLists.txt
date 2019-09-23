@@ -7,17 +7,17 @@ set(HEADER_LIST
 	"${taiga_SOURCE_DIR}/include/taiga/command/categories/Timezone.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/command/categories/Miscellaneous.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/Config.hpp"
-	"${taiga_SOURCE_DIR}/include/taiga/util/Util.hpp"
-	"${taiga_SOURCE_DIR}/include/taiga/util/MathUtil.hpp"
-	"${taiga_SOURCE_DIR}/include/taiga/util/StringUtil.hpp"
-	"${taiga_SOURCE_DIR}/include/taiga/util/CommandUtil.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/Various.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/Math.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/String.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/Command.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/Client.hpp"
 )
 
 add_library(taiga
-	util/Util.cpp
-	util/StringUtil.cpp
-	util/CommandUtil.cpp
+	util/Command.cpp
+	util/Various.cpp
+	util/String.cpp
 	command/Command.cpp
 	command/categories/Category.cpp
 	command/categories/General.cpp

@@ -9,14 +9,6 @@
 					 const std::deque<std::string>& params,       \
 					 Taiga::Client& client)
 
-#define ADD_COMMAND(_name, ...)                                   \
-	log.info(fmt::format("Adding command {}: {}", name, #_name)); \
-	Taiga::Command::add_command({#_name, name, __VA_ARGS__, _name})
-
-#define ADD_COMMAND_DESC(_name, desc, ...)                        \
-	log.info(fmt::format("Adding command {}: {}", name, #_name)); \
-	Taiga::Command::add_command({#_name, name, __VA_ARGS__, _name, desc})
-
 namespace Taiga::Command {
 class Category {
    public:

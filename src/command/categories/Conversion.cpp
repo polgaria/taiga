@@ -1,8 +1,8 @@
 #include <aegis.hpp>
 #include <taiga/command/Command.hpp>
 #include <taiga/command/categories/Conversion.hpp>
-#include <taiga/util/StringUtil.hpp>
-#include <taiga/util/Util.hpp>
+#include <taiga/util/String.hpp>
+#include <taiga/util/Various.hpp>
 
 Taiga::Command::Categories::Conversion::Conversion(const std::string& _name)
 	: Taiga::Command::Category(_name) {}
@@ -29,7 +29,7 @@ COMMAND(money) {
 
 	float conversion_rate;
 	try {
-		conversion_rate = Taiga::Util::conversion_rate(
+		conversion_rate = Taiga::Util::Various::conversion_rate(
 			currency_x, currency_y, client.get_config().currency_conv_api_key,
 			client.get_bot()->get_rest_controller());
 	} catch (const std::runtime_error& error) {
@@ -73,9 +73,30 @@ COMMAND(mbs) {
 }
 
 void Taiga::Command::Categories::Conversion::init(spdlog::logger& log) {
-	ADD_COMMAND(money, {{"currency to convert from"},
-						{"currency to convert to"},
-						{"amount", false}});
-	ADD_COMMAND_DESC(mbps, "Converts Mb/s to Mbps.", {{"value", false}});
-	ADD_COMMAND_DESC(mbs, "Converts Mbps to Mb/s.", {{"value", false}});
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("money")
+			.category(this->name)
+			.description("Converts currency to other currency.")
+			.params({{"currency to convert from"},
+					 {"currency to convert to"},
+					 {"amount", false}})
+			.function(money),
+		log);
+	Taiga::Commands::add_command(  //
+		Taiga::Commands::Command()
+			.name("mbps")
+			.category(this->name)
+			.description("Converts Mb/s to Mbps.")
+			.params({{"value", false}})
+			.function(mbps),
+		log);
+	Taiga::Commands::add_command(  //
+		Taiga::Commands::Command()
+			.name("mbs")
+			.category(this->name)
+			.description("Converts Mbps to Mb/s.")
+			.params({{"value", false}})
+			.function(mbs),
+		log);
 }

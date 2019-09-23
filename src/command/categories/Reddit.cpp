@@ -1,21 +1,33 @@
 #include <taiga/command/Command.hpp>
 #include <taiga/command/categories/Reddit.hpp>
-#include <taiga/util/Util.hpp>
+#include <taiga/util/Various.hpp>
 
 Taiga::Command::Categories::Reddit::Reddit(const std::string& _name)
 	: Taiga::Command::Category(_name) {}
 
 COMMAND(taiga) {
 	obj.channel.create_message(
-		Taiga::Util::get_random_reddit_post_url("taiga"));
+		Taiga::Util::Various::get_random_reddit_post_url("taiga"));
 }
 
 COMMAND(toradora) {
 	obj.channel.create_message(
-		Taiga::Util::get_random_reddit_post_url("toradora"));
+		Taiga::Util::Various::get_random_reddit_post_url("toradora"));
 }
 
 void Taiga::Command::Categories::Reddit::init(spdlog::logger& log) {
-	ADD_COMMAND_DESC(taiga, "Sends a random image from r/taiga", {});
-	ADD_COMMAND_DESC(toradora, "Sends a random image from r/toradora", {});
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("taiga")
+			.description("Sends a random image from r/taiga")
+			.function(taiga)
+			.category(this->name),
+		log);
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("toradora")
+			.description("Sends a random image from r/toradora")
+			.function(toradora)
+			.category(this->name),
+		log);
 }

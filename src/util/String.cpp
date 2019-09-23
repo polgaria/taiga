@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <sstream>
-#include <taiga/util/StringUtil.hpp>
+#include <taiga/util/String.hpp>
 
 std::deque<std::string> Taiga::Util::String::split(const std::string& source,
 												   const char& delim) {
@@ -17,8 +17,7 @@ std::deque<std::string> Taiga::Util::String::split(const std::string& source,
 }
 
 std::deque<std::string> Taiga::Util::String::split_command(
-	const std::string& source,
-	const std::string& prefix) {
+	const std::string& source, const std::string& prefix) {
 	auto arguments = Taiga::Util::String::split(source, ' ');
 	arguments.push_front(prefix);
 

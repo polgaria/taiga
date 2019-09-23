@@ -2,11 +2,11 @@
 #include <date/date.h>
 #include <aegis.hpp>
 #include <nlohmann/json.hpp>
-#include <taiga/util/MathUtil.hpp>
-#include <taiga/util/StringUtil.hpp>
-#include <taiga/util/Util.hpp>
+#include <taiga/util/Math.hpp>
+#include <taiga/util/String.hpp>
+#include <taiga/util/Various.hpp>
 
-std::string Taiga::Util::get_random_reddit_post_url(
+std::string Taiga::Util::Various::get_random_reddit_post_url(
 	const std::string& subreddit) {
 	auto post_json_string =
 		// why not aegis::rest::rest_controller? it can't handle
@@ -20,14 +20,14 @@ std::string Taiga::Util::get_random_reddit_post_url(
 
 	while (post_json.is_null() ||
 		   post_json[0]["data"]["children"][0]["data"]["is_self"].get<bool>()) {
-		post_json = Taiga::Util::get_random_reddit_post_url(subreddit);
+		post_json = Taiga::Util::Various::get_random_reddit_post_url(subreddit);
 	}
 
 	return post_json[0]["data"]["children"][0]["data"]["url"]
 		.get<std::string>();
 }
 
-float Taiga::Util::year_progress() {
+float Taiga::Util::Various::year_progress() {
 	auto now = std::chrono::system_clock::now();
 
 	auto current_date = date::year_month_day{date::floor<date::days>(now)};
@@ -44,10 +44,10 @@ float Taiga::Util::year_progress() {
 	return Taiga::Util::Math::round_to_dec_places(nonrounded_percent, 2);
 }
 
-float Taiga::Util::conversion_rate(const std::string& from,
-								   const std::string& to,
-								   const std::optional<std::string>& api_key,
-								   aegis::rest::rest_controller& rc) {
+float Taiga::Util::Various::conversion_rate(
+	const std::string& from, const std::string& to,
+	const std::optional<std::string>& api_key,
+	aegis::rest::rest_controller& rc) {
 	if (!api_key.has_value()) {
 		throw std::runtime_error("Currency API key not set.");
 	}

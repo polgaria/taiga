@@ -3,6 +3,7 @@
 #include <iostream>
 #include <taiga/command/Command.hpp>
 #include <taiga/command/categories/General.hpp>
+#include <taiga/util/String.hpp>
 
 Taiga::Command::Categories::General::General(const std::string& _name)
 	: Taiga::Command::Category(_name) {}
@@ -11,22 +12,24 @@ COMMAND(help) {
 	using aegis::gateway::objects::field;
 
 	if (!params.empty()) {
-		const auto& found_command = Taiga::Command::all.find(params.front());
-		if (found_command == Taiga::Command::all.end()) {
+		const auto& command_name =
+			Taiga::Util::String::to_lower(params.front());
+		const auto& found_command = Taiga::Commands::all.find(command_name);
+		if (found_command == Taiga::Commands::all.end()) {
 			obj.channel.create_message("Command not found.");
 			return;
 		}
 
-		const auto& command = Taiga::Command::all.at(params.front());
+		auto& command = Taiga::Commands::all.at(params.front());
 		auto fields = std::vector<field>();
 
 		auto embed{aegis::gateway::objects::embed()
-					   .title(fmt::format("**{}**", command.name))
+					   .title(fmt::format("**{}**", command_name))
 					   .color(0x3498DB)};
 
-		auto syntax{fmt::format(command.params.empty() ? "`{}{}" : "`{}{} ",
-								client.get_config().prefix, command.name)};
-		for (const auto& param : command.params) {
+		auto syntax{fmt::format(command.params().empty() ? "`{}{}" : "`{}{} ",
+								client.get_config().prefix, command_name)};
+		for (const auto& param : command.params()) {
 			syntax +=
 				fmt::format(param.required ? "<{}> " : "[{}] ", param.name);
 		}
@@ -34,10 +37,10 @@ COMMAND(help) {
 
 		fields.push_back({field().name("**Syntax**").value(syntax)});
 
-		if (command.description) {
+		if (command.description()) {
 			fields.push_back({field()
 								  .name("**Description**")
-								  .value(command.description.value())});
+								  .value(command.description().value())});
 		}
 
 		embed.fields(fields);
@@ -52,9 +55,9 @@ COMMAND(help) {
 	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
 	auto fields = std::vector<field>();
 
-	for (const auto& command : Taiga::Command::all) {
+	for (auto& command : Taiga::Commands::all) {
 		// should i be doing this?? there's probably a faster way.. eh whatever
-		fields_content[command.second.category] +=
+		fields_content[command.second.category()] +=
 			fmt::format("`{}` ", command.first);
 	}
 	for (const auto& [category, content] : fields_content) {
@@ -160,9 +163,71 @@ COMMAND(server) {
 	obj.channel.create_message_embed(aegis::create_message_t().embed(embed));
 }
 
+COMMAND(user) {
+	using aegis::gateway::objects::field;
+
+	const auto& guild = obj.msg.get_guild();
+	const auto& owner = *guild.find_member(guild.get_owner());
+
+	std::mt19937 rand(static_cast<unsigned long>(obj.msg.get_id().get()));
+
+	auto embed =
+		aegis::gateway::objects::embed()
+			.title(guild.get_name())
+			.color(rand() % 0xFFFFFF)
+			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
+				"https://cdn.discordapp.com/icons/{}/{}.webp?size=1024",
+				guild.get_id().get(), guild.get_icon())});
+	embed.fields(
+		{field()
+			 .name("Members")
+			 .value(fmt::format("{}", guild.get_member_count()))
+			 .is_inline(true),
+		 field()
+			 .name("Channels")
+			 .value(fmt::format("{}", guild.get_channels().size()))
+			 .is_inline(true),
+		 field().name("Owner").value(owner.get_full_name()).is_inline(true)});
+
+	const auto created_at =
+		std::chrono::milliseconds{aegis::snowflake::c_get_time(guild.get_id())};
+	const auto footer = aegis::gateway::objects::footer(fmt::format(
+		"Created on {}",
+		date::format("%F at %X",
+					 std::chrono::system_clock::time_point{created_at})));
+	embed.footer(footer);
+
+	obj.channel.create_message_embed(aegis::create_message_t().embed(embed));
+}
+
 void Taiga::Command::Categories::General::init(spdlog::logger& log) {
-	ADD_COMMAND_DESC(help, "The command you're looking at right now.",
-					 {{"command", false}});
-	ADD_COMMAND_DESC(info, "Bot info.", {});
-	ADD_COMMAND_DESC(server, "Server info.", {});
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("help")
+			.category(this->name)
+			.description("The command you're looking at right now.")
+			.params({{"command", false}})
+			.function(help),
+		log);
+	Taiga::Commands::add_command(  //
+		Taiga::Commands::Command()
+			.name("info")
+			.category(this->name)
+			.description("Bot info.")
+			.function(info),
+		log);
+	Taiga::Commands::add_command(  //
+		Taiga::Commands::Command()
+			.name("server")
+			.category(this->name)
+			.description("Server info.")
+			.function(server),
+		log);
+	Taiga::Commands::add_command(  //
+		Taiga::Commands::Command()
+			.name("user")
+			.category(this->name)
+			.description("User info.")
+			.function(user),
+		log);
 }

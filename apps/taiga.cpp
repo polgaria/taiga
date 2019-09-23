@@ -13,7 +13,7 @@ int main() {
 
 	bot.set_on_message_create(std::bind(&Taiga::Client::message_create, &client,
 										std::placeholders::_1));
-	Taiga::Command::add_commands(*bot.log);
+	Taiga::Commands::add_commands(*bot.log);
 
 	mongocxx::instance instance{};
 

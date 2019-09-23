@@ -6,8 +6,8 @@
 #include <mongocxx/uri.hpp>
 #include <taiga/command/Command.hpp>
 #include <taiga/command/categories/Timezone.hpp>
-#include <taiga/util/CommandUtil.hpp>
-#include <taiga/util/StringUtil.hpp>
+#include <taiga/util/Command.hpp>
+#include <taiga/util/String.hpp>
 
 Taiga::Command::Categories::Timezone::Timezone(const std::string& _name)
 	: Taiga::Command::Category(_name) {}
@@ -178,7 +178,20 @@ COMMAND(tz) {
 }
 
 void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
-	ADD_COMMAND_DESC(set_tz, "Set your timezone.", {{"timezone"}});
-	ADD_COMMAND_DESC(tz, "See your own or another user's timezone.",
-					 {{"user", false}});
+	Taiga::Commands::add_command(  //
+		Taiga::Commands::Command()
+			.name("set_tz")
+			.category(this->name)
+			.description("Set your timezone.")
+			.params({{"timezone"}})
+			.function(set_tz),
+		log);
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("tz")
+			.category(this->name)
+			.description("See your own or another user's timezone.")
+			.params({{"user", false}})
+			.function(set_tz),
+		log);
 }

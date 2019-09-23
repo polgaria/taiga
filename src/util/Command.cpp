@@ -1,6 +1,6 @@
 #include <taiga/Client.hpp>
-#include <taiga/util/CommandUtil.hpp>
-#include <taiga/util/StringUtil.hpp>
+#include <taiga/util/Command.hpp>
+#include <taiga/util/String.hpp>
 
 std::optional<std::reference_wrapper<aegis::user>>
 Taiga::Util::Command::find_user(const std::string& name,
