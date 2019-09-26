@@ -18,32 +18,29 @@ COMMAND(set_tz) {
 	using bsoncxx::builder::stream::finalize;
 	using bsoncxx::builder::stream::open_document;
 
-	mongocxx::client mongodb_client{mongocxx::uri{}};
-
-	auto db = mongodb_client["taiga"];
+	const auto& mongo_client = client.get_mongo_pool().acquire();
+	const auto& tz_to_set = params.front();
+	auto db = (*mongo_client)[client.get_config().name];
 	auto timezones = db["timezones"];
 
-	date::zoned_time<std::chrono::nanoseconds, const date::time_zone*> time;
+	using Time =
+		date::zoned_time<std::chrono::nanoseconds, const date::time_zone*>;
+	Time time;
 
-	// i really don't wanna parse through the timezone DB.. it's 15-30x
-	// slower than this
-	auto split_timezone = Taiga::Util::String::split(params.front(), '/');
 	std::string timezone;
-	if (split_timezone.size() == 1) {
-		timezone = Taiga::Util::String::to_upper(split_timezone.front());
-	} else {
-		for (auto& part : split_timezone) {
-			part = Taiga::Util::String::to_lower(part);
-			part[0] = static_cast<char>(
-				std::toupper(static_cast<unsigned char>(part[0])));
+	for (const auto& tz : date::get_tzdb().zones) {
+		const auto&& tz_name = std::move(tz.name());
+		if (Taiga::Util::String::to_lower(tz_to_set) ==
+			Taiga::Util::String::to_lower(tz_name)) {
+			timezone = std::move(tz_name);
+			time = date::zoned_time{std::move(&tz),
+									std::chrono::system_clock::now()};
+			break;
 		}
-		timezone = Taiga::Util::String::join(split_timezone, "/");
 	}
 
-	try {
-		time = date::zoned_time{timezone, std::chrono::system_clock::now()};
-	} catch (const std::runtime_error&) {
-		obj.channel.create_message("Invalid timezone.");
+	if (timezone.empty()) {
+		obj.channel.create_message("Invalid timezone!");
 		return;
 	}
 
@@ -70,11 +67,10 @@ COMMAND(tz) {
 	using bsoncxx::builder::stream::finalize;
 	using bsoncxx::builder::stream::open_document;
 
-	mongocxx::client mongodb_client{mongocxx::uri{}};
-
 	auto find_user = !params.empty();
 
-	auto db = mongodb_client["taiga"];
+	const auto& mongo_client = client.get_mongo_pool().acquire();
+	auto db = (*mongo_client)[client.get_config().name];
 	auto timezones = db["timezones"];
 
 	std::string member_name{};
