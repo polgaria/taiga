@@ -37,7 +37,7 @@ COMMAND(kva) {
 
 COMMAND(_kill) {
 	obj.channel.create_message("bye").then(
-		[&](const auto&&) { client.get_bot()->shutdown(); });
+		[&](const auto&&) { client.get_bot().shutdown(); });
 }
 
 void Taiga::Command::Categories::Miscellaneous::init(spdlog::logger& log) {

@@ -132,7 +132,7 @@ COMMAND(tz) {
 						time_difference_string);
 				if (!_time_difference) {
 					obj.channel.create_message("Something went wrong.");
-					client.get_bot()->log->error(
+					client.get_bot().log->error(
 						"Somehow failed to convert time difference to an "
 						"integer.");
 
