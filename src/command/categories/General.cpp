@@ -233,11 +233,11 @@ COMMAND(_prefix) {
 		document{} << "id" << guild.get_id() << finalize;
 
 	if (mode == "remove" || mode == "delete") {
-		const auto& prefix = params[1];
 		if (params.size() == 1) {
 			obj.channel.create_message("Too few parameters.");
 			return;
 		}
+		const auto& prefix = params[1];
 
 		// check if there's only one prefix
 		const auto& has_one_prefix = prefixes.find_one(
@@ -353,6 +353,13 @@ COMMAND(_prefix) {
 	}
 }
 
+COMMAND(invite) {
+	obj.channel.create_message(
+		fmt::format("https://discordapp.com/oauth2/"
+					"authorize?client_id={}&scope=bot&permissions=270400",
+					client.get_bot().get_id().get()));
+}
+
 void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
@@ -387,6 +394,14 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 			.params({{"mode"}, {"prefix", false}})
 			.function(_prefix),
 		log);
+	// clang-format off
+	Taiga::Commands::add_command(
+		Taiga::Commands::Command()
+			.name("invite")
+			.function(invite)
+			.category(this->get_name()),
+		log);
+	// clang-format on	
 	/*Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("user")
