@@ -20,7 +20,7 @@ COMMAND(help) {
 			return;
 		}
 
-		auto& command = Taiga::Commands::all.at(params.front());
+		auto& command = Taiga::Commands::all[command_name];
 		auto fields = std::vector<field>();
 
 		auto embed{aegis::gateway::objects::embed()
@@ -88,32 +88,32 @@ COMMAND(info) {
 			.color(rand() % 0xFFFFFF)
 			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
 				"https://cdn.discordapp.com/avatars/{}/{}.webp?size=1024",
-				client.get_bot()->get_id().get(), bot_avatar)});
+				client.get_bot().get_id().get(), bot_avatar)});
 	embed.fields(
 		{field()
 			 .name("Members")
-			 .value(fmt::format("{}", client.get_bot()->get_member_count()))
+			 .value(fmt::format("{}", client.get_bot().get_member_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Guilds")
-			 .value(fmt::format("{}", client.get_bot()->get_guild_count()))
+			 .value(fmt::format("{}", client.get_bot().get_guild_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Channels")
-			 .value(fmt::format("{}", client.get_bot()->get_channel_count()))
+			 .value(fmt::format("{}", client.get_bot().get_channel_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Uptime")
-			 .value(client.get_bot()->uptime_str())
+			 .value(client.get_bot().uptime_str())
 			 .is_inline(true),
 		 field()
 			 .name("Miscellaneous")
 			 .value(
 				 fmt::format("I am shard **#{}** of **{}** running on **{}**",
 							 client.get_bot()
-								 ->get_shard_by_guild(obj.channel.get_guild())
+								 .get_shard_by_guild(obj.channel.get_guild())
 								 .get_id(),
-							 client.get_bot()->shard_max_count,
+							 client.get_bot().shard_max_count,
 							 aegis::utility::platform::get_platform()))
 			 .is_inline(true)});
 

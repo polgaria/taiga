@@ -9,7 +9,7 @@ Taiga::Command::Categories::Conversion::Conversion(const std::string& _name)
 
 COMMAND(money) {
 	const auto currency_x = Taiga::Util::String::to_upper(params.front());
-	const auto currency_y = Taiga::Util::String::to_upper(params.at(1));
+	const auto currency_y = Taiga::Util::String::to_upper(params[1]);
 
 	// just.. no
 	if (currency_x == currency_y) {
@@ -20,7 +20,7 @@ COMMAND(money) {
 
 	const auto _amount =
 		params.size() >= 3
-			? Taiga::Util::String::string_to_number<float>(params.at(2))
+			? Taiga::Util::String::string_to_number<float>(params[2])
 			: 1;
 	if (!_amount) {
 		obj.channel.create_message("Invalid parameters.");
@@ -31,7 +31,7 @@ COMMAND(money) {
 	try {
 		conversion_rate = Taiga::Util::Various::conversion_rate(
 			currency_x, currency_y, client.get_config().currency_conv_api_key,
-			client.get_bot()->get_rest_controller());
+			client.get_bot().get_rest_controller());
 	} catch (const std::runtime_error& error) {
 		obj.channel.create_message(error.what());
 
