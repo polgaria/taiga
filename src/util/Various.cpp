@@ -16,7 +16,7 @@ std::string Taiga::Util::Various::get_random_reddit_post_url(
 				 cpr::Header{{"User-Agent", "taiga"}})
 			.text;
 
-	auto post_json = nlohmann::json::parse(post_json_string);
+	auto post_json = nlohmann::json::parse(std::move(post_json_string));
 
 	while (post_json.is_null() ||
 		   post_json[0]["data"]["children"][0]["data"]["is_self"].get<bool>()) {
@@ -28,20 +28,23 @@ std::string Taiga::Util::Various::get_random_reddit_post_url(
 }
 
 float Taiga::Util::Various::year_progress() {
-	auto now = std::chrono::system_clock::now();
+	const auto& now = std::chrono::system_clock::now();
 
-	auto current_date = date::year_month_day{date::floor<date::days>(now)};
-	auto days_in_year = current_date.year().is_leap() ? 366 : 365;
+	const auto& current_date =
+		date::year_month_day{date::floor<date::days>(now)};
+	const auto& days_in_year = current_date.year().is_leap() ? 366 : 365;
 
-	auto next_date = date::year_month_day{
+	const auto& next_date = date::year_month_day{
 		date::January / 1 / current_date.year() + date::years{1}};
-	auto days_until_next_year =
+	const auto& days_until_next_year =
 		(date::sys_days(next_date) - date::sys_days(current_date)).count();
 
 	auto nonrounded_percent =
-		100.f - (static_cast<float>(days_until_next_year) / days_in_year * 100);
+		100.f - (static_cast<float>(std::move(days_until_next_year)) /
+				 std::move(days_in_year) * 100);
 
-	return Taiga::Util::Math::round_to_dec_places(nonrounded_percent, 2);
+	return Taiga::Util::Math::round_to_dec_places(std::move(nonrounded_percent),
+												  2);
 }
 
 float Taiga::Util::Various::conversion_rate(
@@ -61,7 +64,8 @@ float Taiga::Util::Various::conversion_rate(
 	rp.method = aegis::rest::Get;
 	rp.headers = {"User-Agent: taiga"};
 
-	auto request = rc.execute2(std::forward<aegis::rest::request_params>(rp));
+	const auto& request =
+		rc.execute2(std::forward<aegis::rest::request_params>(rp));
 
 	switch (request.reply_code) {
 		case aegis::rest::http_code::ok: {
@@ -84,7 +88,7 @@ float Taiga::Util::Various::conversion_rate(
 		}
 	}
 
-	auto json = nlohmann::json::parse(request.content);
+	auto json = nlohmann::json::parse(std::move(request.content));
 
 	if (json.find(currency_to_currency) == json.end()) {
 		throw std::invalid_argument("Invalid arguments.");
