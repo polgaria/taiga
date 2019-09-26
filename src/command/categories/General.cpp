@@ -61,6 +61,16 @@ COMMAND(help) {
 	auto fields = std::vector<field>();
 
 	for (auto& command : Taiga::Commands::all) {
+		// check if command is owner-only and if the user executing it is the
+		// bot's owner
+		if (client.get_config().owner_id && command.second.owner_only()) {
+			if (obj.msg.get_user().get_id().get() !=
+				Taiga::Util::String::string_to_number<int64_t>(
+					client.get_config().owner_id.value())) {
+				// skip command if the IDs don't match
+				continue;
+			}
+		}
 		// should i be doing this?? there's probably a faster way.. eh whatever
 		fields_content[command.second.category()] +=
 			fmt::format("`{}` ", command.first);
@@ -295,11 +305,11 @@ COMMAND(_prefix) {
 		}
 		return;
 	} else if (mode == "add") {
-		const auto& prefix = params[1];
 		if (params.size() == 1) {
 			obj.channel.create_message("Too few parameters.");
 			return;
 		}
+		const auto& prefix = params[1];
 
 		if (const auto& prefix_exists =
 				prefixes.find_one(document{} << "id" << guild.get_id()
