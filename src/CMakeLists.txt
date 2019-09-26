@@ -50,6 +50,11 @@ target_compile_definitions(taiga PUBLIC
 	${LIBMONGOCXX_DEFINITIONS}
 )
 
-target_compile_features(taiga PUBLIC cxx_std_17 ${Aegis_CFLAGS_OTHER})
+target_compile_features(taiga PRIVATE cxx_std_17 ${Aegis_CFLAGS_OTHER})
+if(MSVC)
+  target_compile_options(taiga PRIVATE $<$<CONFIG:RELEASE>:/Ox> /W4)
+else()
+  target_compile_options(taiga PRIVATE $<$<CONFIG:RELEASE>:-O3> -Wall -Wextra -pedantic)
+endif()
 
 source_group(TREE "${PROJECT_SOURCE_DIR}/include" PREFIX "Header Files" FILES ${HEADER_LIST})
