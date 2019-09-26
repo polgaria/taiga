@@ -46,8 +46,7 @@ void Commands::add_commands(spdlog::logger& log) {
 GETTER_SETTER(name, std::string&)
 GETTER_SETTER(category, std::string&)
 GETTER_SETTER(params, std::deque<Commands::Parameter>&)
-GETTER_SETTER_ARG(description, Commands::OptionalRef<const std::string>,
-				  std::string&)
+GETTER_SETTER_ARG(description, std::optional<std::string>, std::string&)
 GETTER_SETTER(function, Commands::Function&)
 GETTER_SETTER(owner_only, bool&)
 
