@@ -14,9 +14,8 @@ class Commands {
    public:
 	using Function = std::function<void(
 		aegis::gateway::events::message_create& obj,
-		const std::deque<std::string>& params, Taiga::Client& client)>;
-	template <typename T>
-	using OptionalRef = std::optional<std::reference_wrapper<T>>;
+		const std::deque<std::string>& params,
+		const std::string& command_prefix, Taiga::Client& client)>;
 
 	struct Parameter {
 		std::string_view name;
@@ -34,7 +33,7 @@ class Commands {
 		std::deque<Parameter>& params() noexcept;
 		Command& params(const std::deque<Parameter>& params) noexcept;
 
-		OptionalRef<const std::string> description() noexcept;
+		std::optional<std::string> description() noexcept;
 		Command& description(const std::string& description) noexcept;
 
 		Function& function() noexcept;
@@ -47,7 +46,7 @@ class Commands {
 		std::string _name;
 		std::string _category;
 		std::deque<Parameter> _params = {};
-		OptionalRef<const std::string> _description;
+		std::optional<std::string> _description;
 		Function _function;
 		bool _owner_only = false;
 	};
