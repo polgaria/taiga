@@ -76,7 +76,7 @@ void Taiga::Command::Categories::Conversion::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("money")
-			.category(this->name)
+			.category(this->get_name())
 			.description("Converts currency to other currency.")
 			.params({{"currency to convert from"},
 					 {"currency to convert to"},
@@ -86,7 +86,7 @@ void Taiga::Command::Categories::Conversion::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("mbps")
-			.category(this->name)
+			.category(this->get_name())
 			.description("Converts Mb/s to Mbps.")
 			.params({{"value", false}})
 			.function(mbps),
@@ -94,7 +94,7 @@ void Taiga::Command::Categories::Conversion::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("mbs")
-			.category(this->name)
+			.category(this->get_name())
 			.description("Converts Mbps to Mb/s.")
 			.params({{"value", false}})
 			.function(mbs),

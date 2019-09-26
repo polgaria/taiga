@@ -21,13 +21,13 @@ void Taiga::Command::Categories::Reddit::init(spdlog::logger& log) {
 			.name("taiga")
 			.description("Sends a random image from r/taiga")
 			.function(taiga)
-			.category(this->name),
+			.category(this->get_name()),
 		log);
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("toradora")
 			.description("Sends a random image from r/toradora")
 			.function(toradora)
-			.category(this->name),
+			.category(this->get_name()),
 		log);
 }

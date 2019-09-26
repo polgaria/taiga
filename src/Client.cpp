@@ -1,17 +1,57 @@
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
 #include <memory>
+#include <mongocxx/client.hpp>
 #include <taiga/Client.hpp>
 #include <taiga/command/Command.hpp>
 #include <taiga/util/String.hpp>
 
+#define ENTRY(name, error_message)                                   \
+	if (json.find(#name) != json.end() && json[#name].is_string()) { \
+		conf.name = json[#name].get<std::string>();                  \
+                                                                     \
+	} else {                                                         \
+		throw std::runtime_error(error_message);                     \
+	}
+
+#define OPTIONAL_ENTRY(name)                                         \
+	if (json.find(#name) != json.end() && json[#name].is_string()) { \
+		conf.name = json[#name].get<std::string>();                  \
+	}
+
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
+	using bsoncxx::builder::stream::document;
+	using bsoncxx::builder::stream::finalize;
+
 	// don't want it to be responding to other bots
 	if (obj.msg.get_user().is_bot()) {
 		return;
 	}
 	auto content{obj.msg.get_content()};
-	const auto& prefix = get_config().prefix;
+
+	// try to find an existing custom prefix
+	// if not found, use default prefix
+	std::string prefix{};
+	const auto& mongo_client = get_mongo_pool().acquire();
+	const auto& op_result = (*mongo_client)["taiga"]["prefixes"].find_one(
+		document{} << "id" << obj.msg.get_guild().get_id() << finalize);
+	if (!op_result &&
+		!content.compare(0, config.prefix.size(), config.prefix)) {
+		prefix = config.prefix;
+	} else if (op_result) {
+		for (const auto& res : op_result->view()["prefix"].get_array().value) {
+			const auto& _prefix = std::string{res.get_utf8().value};
+			if (!content.compare(0, _prefix.size(), _prefix)) {
+				prefix = _prefix;
+				break;
+			}
+		}
+	} else {
+		return;
+	}
+
 	// check if it starts with the configured prefix
-	if (!content.compare(0, prefix.size(), prefix)) {
+	if (!prefix.empty()) {
 		auto params = Taiga::Util::String::split_command(
 			content.erase(0, prefix.length()), prefix);
 		if (
@@ -61,24 +101,11 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 		}
 
 		// call command
-		found_command->second.function()(obj, params, *this);
+		found_command->second.function()(obj, params, prefix, *this);
 	}
 }
 
 void Taiga::Client::load_config() {
-#define ENTRY(name, error_message)                                   \
-	if (json.find(#name) != json.end() && json[#name].is_string()) { \
-		conf.name = json[#name].get<std::string>();                  \
-                                                                     \
-	} else {                                                         \
-		throw std::runtime_error(error_message);                     \
-	}
-
-#define OPTIONAL_ENTRY(name)                                         \
-	if (json.find(#name) != json.end() && json[#name].is_string()) { \
-		conf.name = json[#name].get<std::string>();                  \
-	}
-
 	std::ifstream i("config.json");
 
 	if (i.fail()) {

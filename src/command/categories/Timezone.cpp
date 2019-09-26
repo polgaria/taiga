@@ -185,9 +185,9 @@ void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("tz")
-			.category(this->name)
+			.category(this->get_name())
 			.description("See your own or another user's timezone.")
 			.params({{"user", false}})
-			.function(set_tz),
+			.function(tz),
 		log);
 }

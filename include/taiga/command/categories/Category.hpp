@@ -7,15 +7,17 @@
 #define COMMAND(name)                                             \
 	static void name(aegis::gateway::events::message_create& obj, \
 					 const std::deque<std::string>& params,       \
-					 Taiga::Client& client)
+					 const std::string& command_prefix, Taiga::Client& client)
 
 namespace Taiga::Command {
 class Category {
    public:
-	Category(const std::string& name);
+	Category(std::string name);
 	virtual ~Category();
 	virtual void init(spdlog::logger&) {}
+	std::string& get_name() { return name; }
 
+   private:
 	std::string name;
 };
 }  // namespace Taiga::Command
