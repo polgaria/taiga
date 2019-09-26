@@ -101,7 +101,7 @@ COMMAND(tz) {
 									   ? "Your timezone has not "
 										 "been set."
 									   : fmt::format("{}'s timezone has not "
-													 "been set",
+													 "been set.",
 													 member_name));
 		return;
 	}
@@ -117,7 +117,7 @@ COMMAND(tz) {
 			auto author_timezone =
 				op_result->view()["timezone"].get_utf8().value.to_string();
 			auto author_time = date::zoned_time{
-				author_timezone, std::chrono::system_clock::now()};
+				std::move(author_timezone), std::chrono::system_clock::now()};
 			// if not done, the time difference can end up being 00:59 and
 			// not an hour
 			time = date::zoned_time{timezone, std::chrono::system_clock::now()};
@@ -170,14 +170,14 @@ COMMAND(tz) {
 			timezone, date::format("%F %H:%M", time));
 	}
 
-	obj.channel.create_message(output);
+	obj.channel.create_message(std::move(output));
 }
 
 void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("set_tz")
-			.category(this->name)
+			.category(this->get_name())
 			.description("Set your timezone.")
 			.params({{"timezone"}})
 			.function(set_tz),
