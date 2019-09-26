@@ -29,7 +29,8 @@ class String {
 	static std::string join(const Range& elements,
 							const std::string& delimiter) {
 		std::ostringstream os;
-		auto b = begin(elements), e = end(elements);
+		auto b = begin(elements);
+		auto e = end(elements);
 
 		if (b != e) {
 			std::copy(b, prev(e),
