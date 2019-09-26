@@ -11,6 +11,6 @@ class Command {
 		const std::string&, const aegis::gateway::objects::message&,
 		Taiga::Client&);
 };
-};  // namespace Taiga::Util
+}  // namespace Taiga::Util
 
 #endif
