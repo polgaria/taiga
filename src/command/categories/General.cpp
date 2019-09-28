@@ -210,38 +210,6 @@ COMMAND(server) {
 	obj.channel.create_message_embed(aegis::create_message_t().embed(embed));
 }
 
-// WIP
-COMMAND(user) {
-	using aegis::gateway::objects::field;
-
-	const auto& _user =
-		Taiga::Util::Command::find_user(params.front(), obj.msg, client);
-	if (!_user) {
-		obj.channel.create_message("User not found!");
-	}
-	const auto& user = _user.value().get();
-
-	std::mt19937 rand(static_cast<unsigned long>(obj.msg.get_id().get()));
-
-	auto embed =
-		aegis::gateway::objects::embed()
-			.title(user.get_full_name())
-			.color(rand() % 0xFFFFFF)
-			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
-				"https://cdn.discordapp.com/avatars/{}/{}.webp?size=1024",
-				user.get_id().get(), user.get_avatar())});
-
-	const auto created_at =
-		std::chrono::milliseconds{aegis::snowflake::c_get_time(user.get_id())};
-	const auto footer = aegis::gateway::objects::footer(fmt::format(
-		"Created on {}",
-		date::format("%F at %X",
-					 std::chrono::system_clock::time_point{created_at})));
-	embed.footer(footer);
-
-	obj.channel.create_message_embed(aegis::create_message_t().embed(embed));
-}
-
 // TODO: clean up this horrible mess
 COMMAND(_prefix) {
 	using bsoncxx::builder::stream::close_document;
@@ -399,7 +367,7 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("help")
-			.category(std::forward<std::string>(this->get_name()))
+			.category(this->get_name())
 			.description("The command you're looking at right now.")
 			.params({{"command", false}})
 			.function(help),
@@ -407,21 +375,21 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("info")
-			.category(std::forward<std::string>(this->get_name()))
+			.category(this->get_name())
 			.description("Bot info.")
 			.function(info),
 		log);
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("server")
-			.category(std::forward<std::string>(this->get_name()))
+			.category(this->get_name())
 			.description("Server info.")
 			.function(server),
 		log);
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("prefix")
-			.category(std::forward<std::string>(this->get_name()))
+			.category(this->get_name())
 			.description("Adds/removes a server-specific prefix, depending on "
 						 "the mode requested.\n"
 						 "Possible modes: `add`, `remove`/`delete`, `list`.\n"
@@ -437,11 +405,4 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 			.category(std::forward<std::string>(this->get_name())),
 		log);
 	// clang-format on	
-	/*Taiga::Commands::add_command(  //
-		Taiga::Commands::Command()
-			.name("user")
-			.category(this->name)
-			.description("User info.")
-			.function(user),
-		log);*/
 }
