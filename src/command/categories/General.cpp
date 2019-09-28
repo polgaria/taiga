@@ -14,6 +14,7 @@ Taiga::Command::Categories::General::General(const std::string& _name)
 
 COMMAND(help) {
 	using aegis::gateway::objects::field;
+	auto fields = std::vector<field>();
 
 	if (!params.empty()) {
 		const auto& command_name =
@@ -25,7 +26,6 @@ COMMAND(help) {
 		}
 
 		auto& command = Taiga::Commands::all[command_name];
-		auto fields = std::vector<field>();
 
 		auto embed{aegis::gateway::objects::embed()
 					   .title(fmt::format("**{}**", command_name))
@@ -39,12 +39,33 @@ COMMAND(help) {
 		}
 		syntax += '`';
 
-		fields.push_back({field().name("**Syntax**").value(std::move(syntax))});
+		fields.push_back({field()
+							  .name("**Syntax**")
+							  .value(std::move(syntax))
+							  .is_inline(true)});
 
-		if (command.description()) {
+		if (!command.description().empty()) {
+			embed.description(command.description());
+		}
+		if (!command.aliases().empty()) {
+			auto& aliases = command.aliases();
+
+			std::string aliases_string{};
+
+			// if the command name used is an alias, add the actual command name
+			if (aliases.find(command_name) != aliases.end()) {
+				aliases_string += fmt::format("`{}` ", command.name());
+			}
+			for (const auto& alias : aliases) {
+				if (alias != command_name) {
+					aliases_string += fmt::format("`{}` ", alias);
+				}
+			}
+
 			fields.push_back({field()
-								  .name("**Description**")
-								  .value(command.description().value())});
+								  .name("**Aliases**")
+								  .value(std::move(aliases_string))
+								  .is_inline(true)});
 		}
 
 		embed.fields(std::move(fields));
@@ -55,10 +76,10 @@ COMMAND(help) {
 		return;
 	}
 
-	auto embed{
-		aegis::gateway::objects::embed().title("**Commands**").color(0x3498DB)};
+	auto embed =
+		aegis::gateway::objects::embed().title("**Commands**").color(0x3498DB);
 	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
-	auto fields = std::vector<field>();
+	auto added = std::unordered_map<std::string, bool>();
 
 	for (auto& command : Taiga::Commands::all) {
 		// check if command is owner-only and if the user executing it is the
@@ -71,9 +92,13 @@ COMMAND(help) {
 				continue;
 			}
 		}
-		// should i be doing this?? there's probably a faster way.. eh whatever
-		fields_content[command.second.category()] +=
-			fmt::format("`{}` ", command.first);
+
+		const auto& command_name = command.second.name();
+		if (!added.count(command_name)) {
+			added[command_name] = true;
+			fields_content[command.second.category()] +=
+				fmt::format("`{}` ", command_name);
+		}
 	}
 	for (const auto& [category, content] : fields_content) {
 		fields.push_back(
@@ -374,7 +399,7 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("help")
-			.category(this->get_name())
+			.category(std::forward<std::string>(this->get_name()))
 			.description("The command you're looking at right now.")
 			.params({{"command", false}})
 			.function(help),
@@ -382,21 +407,21 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("info")
-			.category(this->get_name())
+			.category(std::forward<std::string>(this->get_name()))
 			.description("Bot info.")
 			.function(info),
 		log);
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("server")
-			.category(this->get_name())
+			.category(std::forward<std::string>(this->get_name()))
 			.description("Server info.")
 			.function(server),
 		log);
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("prefix")
-			.category(this->get_name())
+			.category(std::forward<std::string>(this->get_name()))
 			.description("Adds/removes a server-specific prefix, depending on "
 						 "the mode requested.\n"
 						 "Possible modes: `add`, `remove`/`delete`, `list`.\n"
@@ -409,7 +434,7 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 		Taiga::Commands::Command()
 			.name("invite")
 			.function(invite)
-			.category(this->get_name()),
+			.category(std::forward<std::string>(this->get_name())),
 		log);
 	// clang-format on	
 	/*Taiga::Commands::add_command(  //

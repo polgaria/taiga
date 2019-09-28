@@ -8,6 +8,7 @@
 #include <iostream>
 #include <taiga/Client.hpp>
 #include <taiga/Config.hpp>
+#include <unordered_set>
 
 namespace Taiga {
 class Commands {
@@ -33,7 +34,11 @@ class Commands {
 		std::deque<Parameter>& params() noexcept;
 		Command& params(const std::deque<Parameter>& params) noexcept;
 
-		std::optional<std::string> description() noexcept;
+		std::unordered_set<std::string>& aliases() noexcept;
+		Command& aliases(
+			const std::unordered_set<std::string>& aliases) noexcept;
+
+		std::string& description() noexcept;
 		Command& description(const std::string& description) noexcept;
 
 		Function& function() noexcept;
@@ -46,7 +51,8 @@ class Commands {
 		std::string _name;
 		std::string _category;
 		std::deque<Parameter> _params = {};
-		std::optional<std::string> _description;
+		std::unordered_set<std::string> _aliases;
+		std::string _description;
 		Function _function;
 		bool _owner_only = false;
 	};

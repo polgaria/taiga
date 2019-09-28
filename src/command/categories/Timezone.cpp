@@ -176,7 +176,8 @@ COMMAND(tz) {
 void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
-			.name("set_tz")
+			.name("settz")
+			.aliases({"set_tz", "mytimeis"})
 			.category(this->get_name())
 			.description("Set your timezone.")
 			.params({{"timezone"}})
@@ -185,8 +186,9 @@ void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("tz")
+			.aliases({"time", "timefor"})
 			.category(this->get_name())
-			.description("See your own or another user's timezone.")
+			.description("See your own or another user's time.")
 			.params({{"user", false}})
 			.function(tz),
 		log);

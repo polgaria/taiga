@@ -6,17 +6,19 @@
 #include <taiga/command/Command.hpp>
 #include <taiga/util/String.hpp>
 
-#define ENTRY(name, error_message)                                   \
-	if (json.find(#name) != json.end() && json[#name].is_string()) { \
-		conf.name = json[#name].get<std::string>();                  \
-                                                                     \
-	} else {                                                         \
-		throw std::runtime_error(error_message);                     \
+#define ENTRY(name, error_message)                         \
+	if (config_json.find(#name) != config_json.end() &&    \
+		config_json[#name].is_string()) {                  \
+		conf.name = config_json[#name].get<std::string>(); \
+                                                           \
+	} else {                                               \
+		throw std::runtime_error(error_message);           \
 	}
 
-#define OPTIONAL_ENTRY(name)                                         \
-	if (json.find(#name) != json.end() && json[#name].is_string()) { \
-		conf.name = json[#name].get<std::string>();                  \
+#define OPTIONAL_ENTRY(name)                               \
+	if (config_json.find(#name) != config_json.end() &&    \
+		config_json[#name].is_string()) {                  \
+		conf.name = config_json[#name].get<std::string>(); \
 	}
 
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
@@ -65,13 +67,14 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 		// remove the params as we go
 		params.pop_front();
 		// make command name lower-case
-		params.front() = Taiga::Util::String::to_lower(params.front());
+		const auto& command_name =
+			Taiga::Util::String::to_lower(params.front());
 		if (params.empty()) {
 			return;
 		}
 
 		// get command
-		const auto& found_command = Taiga::Commands::all.find(params.front());
+		const auto& found_command = Taiga::Commands::all.find(command_name);
 		if (found_command == Taiga::Commands::all.end()) {
 			obj.channel.create_message("Command not found.");
 			return;
@@ -106,16 +109,16 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 }
 
 void Taiga::Client::load_config() {
-	std::ifstream i("config.json");
+	std::ifstream config_file("config.json");
 
-	if (i.fail()) {
+	if (config_file.fail()) {
 		throw std::runtime_error("No config found.");
 	}
 
-	nlohmann::json json;
-	i >> json;
+	nlohmann::json config_json;
+	config_file >> config_json;
 
-	i.close();
+	config_file.close();
 
 	Taiga::Config::Config conf;
 	ENTRY(prefix, "Invalid config: The bot prefix is missing.")

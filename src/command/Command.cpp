@@ -15,6 +15,7 @@ using Command = Taiga::Commands::Command;
 		return *this;                                    \
 	}
 
+// stays incase it's ever needed again
 #define GETTER_SETTER_ARG(fname, type, param_type)             \
 	type Command::fname() noexcept { return _##fname; }        \
 	Command& Command::fname(const param_type fname) noexcept { \
@@ -34,6 +35,13 @@ void Commands::add_command(Taiga::Commands::Command command,
 	log.info("Adding command {} (category {})", command.name(),
 			 command.category());
 	all.emplace(command.name(), command);
+	if (!command.aliases().empty()) {
+		for (const auto& alias : command.aliases()) {
+			log.info("Adding alias {} for command {} (category {})", alias,
+					 command.name(), command.category());
+			all.emplace(alias, command);
+		}
+	}
 }
 void Commands::add_commands(spdlog::logger& log) {
 	INIT_CATEGORY(General);
@@ -46,7 +54,8 @@ void Commands::add_commands(spdlog::logger& log) {
 GETTER_SETTER(name, std::string&)
 GETTER_SETTER(category, std::string&)
 GETTER_SETTER(params, std::deque<Commands::Parameter>&)
-GETTER_SETTER_ARG(description, std::optional<std::string>, std::string&)
+GETTER_SETTER(aliases, std::unordered_set<std::string>&)
+GETTER_SETTER(description, std::string&)
 GETTER_SETTER(function, Commands::Function&)
 GETTER_SETTER(owner_only, bool&)
 
