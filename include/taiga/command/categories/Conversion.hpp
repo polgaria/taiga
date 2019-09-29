@@ -1,5 +1,4 @@
-#ifndef CONVERSION_HPP
-#define CONVERSION_HPP
+#pragma once
 
 #include <taiga/command/categories/Category.hpp>
 
@@ -10,5 +9,3 @@ class Conversion : Taiga::Command::Category {
 	void init(spdlog::logger& log) override;
 };
 }  // namespace Taiga::Command::Categories
-
-#endif

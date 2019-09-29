@@ -1,5 +1,4 @@
-#ifndef COMMAND_HPP
-#define COMMAND_HPP
+#pragma once
 
 #include <aegis/gateway/objects/message.hpp>
 #include <deque>
@@ -8,6 +7,8 @@
 #include <iostream>
 #include <taiga/Client.hpp>
 #include <taiga/Config.hpp>
+#include <taiga/command/categories/Category.hpp>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace Taiga {
@@ -25,32 +26,32 @@ class Commands {
 
 	class Command {
 	   public:
-		std::string& name() noexcept;
+		const std::string& name() const noexcept;
 		Command& name(const std::string& name) noexcept;
 
-		std::string& category() noexcept;
-		Command& category(const std::string& category) noexcept;
+		const Taiga::Command::Category& category() const noexcept;
+		Command& category(const Taiga::Command::Category& category) noexcept;
 
-		std::deque<Parameter>& params() noexcept;
+		const std::deque<Parameter>& params() const noexcept;
 		Command& params(const std::deque<Parameter>& params) noexcept;
 
-		std::unordered_set<std::string>& aliases() noexcept;
+		const std::unordered_set<std::string>& aliases() const noexcept;
 		Command& aliases(
 			const std::unordered_set<std::string>& aliases) noexcept;
 
-		std::string& description() noexcept;
+		const std::string& description() const noexcept;
 		Command& description(const std::string& description) noexcept;
 
-		Function& function() noexcept;
+		const Function& function() const noexcept;
 		Command& function(const Function& function) noexcept;
 
-		bool& owner_only() noexcept;
+		const bool& owner_only() const noexcept;
 		Command& owner_only(const bool& is_owner_only) noexcept;
 
 	   private:
 		std::string _name;
-		std::string _category;
-		std::deque<Parameter> _params = {};
+		Taiga::Command::Category _category = {"None"};
+		std::deque<Parameter> _params;
 		std::unordered_set<std::string> _aliases;
 		std::string _description;
 		Function _function;
@@ -59,10 +60,9 @@ class Commands {
 
 	using MappedCommands = nlohmann::fifo_map<std::string, Command>;
 	static MappedCommands all;
+	static std::unordered_map<std::string, Taiga::Command::Category> categories;
 
 	static void add_command(Command command, spdlog::logger& log);
 	static void add_commands(spdlog::logger& log);
 };
 }  // namespace Taiga
-
-#endif

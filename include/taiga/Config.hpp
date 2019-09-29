@@ -1,5 +1,4 @@
-#ifndef CONFIG_HPP
-#define CONFIG_HPP
+#pragma once
 
 #include <iostream>
 #include <optional>
@@ -13,5 +12,3 @@ struct Config {
 	std::optional<std::string> owner_id;
 };
 }  // namespace Taiga::Config
-
-#endif

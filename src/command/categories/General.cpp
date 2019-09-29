@@ -16,23 +16,74 @@ COMMAND(help) {
 	using aegis::gateway::objects::field;
 	auto fields = std::vector<field>();
 
+	// if any parameters were passed
 	if (!params.empty()) {
-		const auto& command_name =
-			Taiga::Util::String::to_lower(params.front());
-		const auto& found_command = Taiga::Commands::all.find(command_name);
+		const auto& name = Taiga::Util::String::to_lower(params.front());
+
+		// try to find a command
+		// jesus christ this is ugly
+		const auto& found_command = std::find_if(
+			Taiga::Commands::all.begin(), Taiga::Commands::all.end(),
+			[&name](const std::pair<std::string, Taiga::Commands::Command>&
+						command) {
+				return Taiga::Util::String::to_lower(command.first) == name;
+			});
+		// if no command was found
 		if (found_command == Taiga::Commands::all.end()) {
-			obj.channel.create_message("Command not found.");
+			const auto& _found_category =
+				// jesus christ this is ugly
+				std::find_if(
+					Taiga::Commands::categories.begin(),
+					Taiga::Commands::categories.end(),
+					[&name](
+						const std::pair<std::string, Taiga::Command::Category>&
+							category) {
+						return Taiga::Util::String::to_lower(
+								   category.second.get_name()) == name;
+					});
+
+			// then try to find a category
+			if (_found_category != Taiga::Commands::categories.end()) {
+				const auto& found_category = _found_category->second;
+
+				auto embed{
+					aegis::gateway::objects::embed()
+						.title(fmt::format("**{}**", found_category.get_name()))
+						.color(0x3498DB)};
+				std::string output{};
+
+				// find commands in that category
+				for (auto& command : Taiga::Commands::all) {
+					if (command.second.category().get_name() ==
+						found_category.get_name()) {
+						output +=
+							fmt::format(!command.second.description().empty()
+											? "**{}** - {}\n"
+											: "**{}**\n",
+										command.second.name(),
+										command.second.description());
+					}
+				}
+
+				embed.description(std::move(output));
+				obj.channel.create_message_embed(
+					aegis::create_message_t().embed(embed));
+				return;
+			}
+
+			// if no category was found either
+			obj.channel.create_message("No command or category found.");
 			return;
 		}
 
-		auto& command = Taiga::Commands::all[command_name];
+		auto& command = Taiga::Commands::all[name];
 
 		auto embed{aegis::gateway::objects::embed()
-					   .title(fmt::format("**{}**", command_name))
+					   .title(fmt::format("**{}**", name))
 					   .color(0x3498DB)};
 
 		auto syntax{fmt::format(command.params().empty() ? "`{}{}" : "`{}{} ",
-								command_prefix, command_name)};
+								command_prefix, name)};
 		for (const auto& param : command.params()) {
 			syntax +=
 				fmt::format(param.required ? "<{}> " : "[{}] ", param.name);
@@ -53,11 +104,11 @@ COMMAND(help) {
 			std::string aliases_string{};
 
 			// if the command name used is an alias, add the actual command name
-			if (aliases.find(command_name) != aliases.end()) {
+			if (aliases.find(name) != aliases.end()) {
 				aliases_string += fmt::format("`{}` ", command.name());
 			}
 			for (const auto& alias : aliases) {
-				if (alias != command_name) {
+				if (alias != name) {
 					aliases_string += fmt::format("`{}` ", alias);
 				}
 			}
@@ -81,7 +132,7 @@ COMMAND(help) {
 	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
 	auto added = std::unordered_map<std::string, bool>();
 
-	for (auto& command : Taiga::Commands::all) {
+	for (const auto& command : Taiga::Commands::all) {
 		// check if command is owner-only and if the user executing it is the
 		// bot's owner
 		if (client.get_config().owner_id && command.second.owner_only()) {
@@ -96,7 +147,7 @@ COMMAND(help) {
 		const auto& command_name = command.second.name();
 		if (!added.count(command_name)) {
 			added[command_name] = true;
-			fields_content[command.second.category()] +=
+			fields_content[command.second.category().get_name()] +=
 				fmt::format("`{}` ", command_name);
 		}
 	}
@@ -367,7 +418,7 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("help")
-			.category(this->get_name())
+			.category(*this)
 			.description("The command you're looking at right now.")
 			.params({{"command", false}})
 			.function(help),
@@ -375,21 +426,21 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("info")
-			.category(this->get_name())
+			.category(*this)
 			.description("Bot info.")
 			.function(info),
 		log);
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("server")
-			.category(this->get_name())
+			.category(*this)
 			.description("Server info.")
 			.function(server),
 		log);
 	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("prefix")
-			.category(this->get_name())
+			.category(*this)
 			.description("Adds/removes a server-specific prefix, depending on "
 						 "the mode requested.\n"
 						 "Possible modes: `add`, `remove`/`delete`, `list`.\n"
@@ -402,7 +453,7 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 		Taiga::Commands::Command()
 			.name("invite")
 			.function(invite)
-			.category(std::forward<std::string>(this->get_name())),
+			.category(*this),
 		log);
 	// clang-format on	
 }

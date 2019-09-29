@@ -8,19 +8,19 @@
 using Taiga::Commands;
 using Command = Taiga::Commands::Command;
 
-#define GETTER_SETTER(fname, type)                       \
-	type Command::fname() noexcept { return _##fname; }  \
-	Command& Command::fname(const type fname) noexcept { \
-		_##fname = fname;                                \
-		return *this;                                    \
+#define GETTER_SETTER(fname, type)                                  \
+	const type Command::fname() const noexcept { return _##fname; } \
+	Command& Command::fname(const type fname) noexcept {            \
+		_##fname = fname;                                           \
+		return *this;                                               \
 	}
 
 // stays incase it's ever needed again
-#define GETTER_SETTER_ARG(fname, type, param_type)             \
-	type Command::fname() noexcept { return _##fname; }        \
-	Command& Command::fname(const param_type fname) noexcept { \
-		_##fname = fname;                                      \
-		return *this;                                          \
+#define GETTER_SETTER_ARG(fname, type, param_type)                  \
+	const type Command::fname() const noexcept { return _##fname; } \
+	Command& Command::fname(const param_type fname) noexcept {      \
+		_##fname = fname;                                           \
+		return *this;                                               \
 	}
 
 #define INIT_CATEGORY(category) \
@@ -28,17 +28,21 @@ using Command = Taiga::Commands::Command;
 
 void Commands::add_command(Taiga::Commands::Command command,
 						   spdlog::logger& log) {
+	if (categories.find(command.category().get_name()) == categories.end()) {
+		categories.emplace(command.category().get_name(), command.category());
+	}
+
 	if (all.find(command.name()) != all.end()) {
 		log.error("Tried to add duplicate command {}!", command.name());
 		return;
 	}
 	log.info("Adding command {} (category {})", command.name(),
-			 command.category());
+			 command.category().get_name());
 	all.emplace(command.name(), command);
 	if (!command.aliases().empty()) {
 		for (const auto& alias : command.aliases()) {
 			log.info("Adding alias {} for command {} (category {})", alias,
-					 command.name(), command.category());
+					 command.name(), command.category().get_name());
 			all.emplace(alias, command);
 		}
 	}
@@ -52,7 +56,7 @@ void Commands::add_commands(spdlog::logger& log) {
 }
 
 GETTER_SETTER(name, std::string&)
-GETTER_SETTER(category, std::string&)
+GETTER_SETTER(category, Taiga::Command::Category&)
 GETTER_SETTER(params, std::deque<Commands::Parameter>&)
 GETTER_SETTER(aliases, std::unordered_set<std::string>&)
 GETTER_SETTER(description, std::string&)
@@ -60,3 +64,5 @@ GETTER_SETTER(function, Commands::Function&)
 GETTER_SETTER(owner_only, bool&)
 
 Taiga::Commands::MappedCommands Taiga::Commands::all;
+std::unordered_map<std::string, Taiga::Command::Category>
+	Taiga::Commands::categories;

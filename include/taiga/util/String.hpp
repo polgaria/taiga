@@ -1,5 +1,4 @@
-#ifndef STRING_HPP
-#define STRING_HPP
+#pragma once
 
 #include <spdlog/fmt/bundled/format.h>
 #include <deque>
@@ -51,5 +50,3 @@ class String {
 	static std::string to_lower(const std::string&);
 };
 }  // namespace Taiga::Util
-
-#endif

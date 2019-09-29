@@ -1,5 +1,4 @@
-#ifndef MATH_HPP
-#define MATH_HPP
+#pragma once
 
 #include <math.h>
 
@@ -14,5 +13,3 @@ class Math {
 	}
 };
 }  // namespace Taiga::Util
-
-#endif

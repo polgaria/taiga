@@ -1,5 +1,4 @@
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#pragma once
 
 #include <aegis.hpp>
 #include <mongocxx/pool.hpp>
@@ -25,5 +24,3 @@ class Client {
 	Taiga::Config::Config config;
 };
 }  // namespace Taiga
-
-#endif

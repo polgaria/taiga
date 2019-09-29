@@ -1,5 +1,4 @@
-#ifndef REDDIT_HPP
-#define REDDIT_HPP
+#pragma once
 
 #include <taiga/command/categories/Category.hpp>
 
@@ -11,5 +10,3 @@ class Reddit : public Taiga::Command::Category {
 	void init(spdlog::logger& log) override;
 };
 }  // namespace Taiga::Command::Categories
-
-#endif

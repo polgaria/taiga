@@ -1,5 +1,4 @@
-#ifndef CATEGORIES_HPP
-#define CATEGORIES_HPP
+#pragma once
 
 #include <spdlog/logger.h>
 #include <iostream>
@@ -15,11 +14,9 @@ class Category {
 	Category(std::string name);
 	virtual ~Category();
 	virtual void init(spdlog::logger&) {}
-	std::string& get_name() { return name; }
+	const std::string& get_name() const noexcept { return name; }
 
    private:
 	std::string name;
 };
 }  // namespace Taiga::Command
-
-#endif

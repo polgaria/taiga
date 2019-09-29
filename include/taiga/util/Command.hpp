@@ -1,5 +1,4 @@
-#ifndef UTIL_COMMAND_HPP
-#define UTIL_COMMAND_HPP
+#pragma once
 
 #include <aegis.hpp>
 #include <taiga/Client.hpp>
@@ -12,5 +11,3 @@ class Command {
 		Taiga::Client&);
 };
 }  // namespace Taiga::Util
-
-#endif

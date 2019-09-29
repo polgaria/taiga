@@ -1,5 +1,4 @@
-#ifndef VARIOUS_HPP
-#define VARIOUS_HPP
+#pragma once
 
 #include <spdlog/fmt/bundled/format.h>
 #include <aegis/rest/rest_controller.hpp>
@@ -15,5 +14,3 @@ class Various {
 								 aegis::rest::rest_controller& rc);
 };
 }  // namespace Taiga::Util
-
-#endif

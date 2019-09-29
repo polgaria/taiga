@@ -47,28 +47,28 @@ void Taiga::Command::Categories::Miscellaneous::init(spdlog::logger& log) {
 			.description("Rates things on a scale of 0 to 10.")
 			.params({{"ratee"}})
 			.function(rate)
-			.category(this->get_name()),
+			.category(*this),
 		log);
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("progress")
 			.description("Progress to the end of the year.")
 			.function(progress)
-			.category(this->get_name()),
+			.category(*this),
 		log);
 	// clang-format off
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("kva")
 			.function(kva)
-			.category(this->get_name()),
+			.category(*this),
 		log);
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("kill")
 			.owner_only(true)
 			.function(_kill)
-			.category(this->get_name()),
+			.category(*this),
 		log);
 	// clang-format on
 }

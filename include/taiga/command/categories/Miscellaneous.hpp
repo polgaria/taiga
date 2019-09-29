@@ -1,5 +1,4 @@
-#ifndef MISCELLANEOUS_HPP
-#define MISCELLANEOUS_HPP
+#pragma once
 
 #include <taiga/command/categories/Category.hpp>
 
@@ -10,5 +9,3 @@ class Miscellaneous : Taiga::Command::Category {
 	void init(spdlog::logger& log) override;
 };
 }  // namespace Taiga::Command::Categories
-
-#endif
