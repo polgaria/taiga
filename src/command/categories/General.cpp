@@ -18,6 +18,16 @@ COMMAND(help) {
 
 	// if any parameters were passed
 	if (!params.empty()) {
+		std::string type;
+		if (params.size() > 1) {
+			type = Taiga::Util::String::to_lower(params[1]);
+		}
+
+		if (!type.empty() && type != "command" && type != "category") {
+			obj.channel.create_message("Invalid explicit type!");
+			return;
+		}
+
 		const auto& name = Taiga::Util::String::to_lower(params.front());
 
 		// try to find a command
@@ -28,8 +38,8 @@ COMMAND(help) {
 						command) {
 				return Taiga::Util::String::to_lower(command.first) == name;
 			});
-		// if no command was found
-		if (found_command == Taiga::Commands::all.end()) {
+		// if no command was found (or the type explicitly stated is category)
+		if (found_command == Taiga::Commands::all.end() || type == "category") {
 			const auto& _found_category =
 				// jesus christ this is ugly
 				std::find_if(
@@ -43,7 +53,8 @@ COMMAND(help) {
 					});
 
 			// then try to find a category
-			if (_found_category != Taiga::Commands::categories.end()) {
+			if (_found_category != Taiga::Commands::categories.end() &&
+				type != "command") {
 				const auto& found_category = _found_category->second;
 
 				auto embed{
@@ -71,8 +82,14 @@ COMMAND(help) {
 				return;
 			}
 
-			// if no category was found either
-			obj.channel.create_message("No command or category found.");
+			if (type == "command") {
+				obj.channel.create_message("No command found.");
+			} else if (type == "category") {
+				obj.channel.create_message("No category found.");
+			} else {
+				obj.channel.create_message("No command or category found.");
+			}
+
 			return;
 		}
 
@@ -177,7 +194,7 @@ COMMAND(help) {
 COMMAND(info) {
 	using aegis::gateway::objects::field;
 
-	const auto& bot_avatar = obj.msg.get_guild().self()->get_avatar();
+	const auto& bot_avatar = client.get_bot().self()->get_avatar();
 
 	std::mt19937 rand(static_cast<unsigned long>(obj.msg.get_id().get()));
 
@@ -438,12 +455,17 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 			.metadata(
 				Metadata()
 					.description("The command you're looking at right now.")
-					.examples({{"{}help", "Lists all commands."},
-							   {"{}help help",
-								"Sends info about the `help` command."},
-							   {"{}help General",
-								"Sends info about the `General` category."}}))
-			.params({{"command", false}})
+					.examples(Examples{
+						{"", "Lists all commands."},
+						{"help", "Sends help for the `help` command."},
+						{"General", "Sends help for the `General` category."},
+						{"help category",
+						 "Sends help for the `help` **category**. "
+						 "(note the explicitly stated type!)"},
+						{"help command",
+						 "Sends help for the `help` **command**. (note the "
+						 "explicitly stated type!)"}}))
+			.params({{"command", false}, {"type", false}})
 			.function(help),
 		log);
 	Taiga::Commands::add_command(  //
@@ -467,15 +489,17 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 			.metadata(
 				Metadata()
 					.description(
-						"Adds/removes a server-specific prefix, depending on "
+						"Adds/removes a server-specific prefix, depending "
+						"on "
 						"the mode requested.\n"
-						"Possible modes: `add`, `remove`/`delete`, `list`.\n"
+						"Possible modes: `add`, `remove`/`delete`, "
+						"`list`.\n"
 						"Requires the `Manage Messages` permission.")
-					.examples(
-						{{"add test", "Adds `test` to the guild prefixes."},
-						 {"remove test",
-						  "Removes `test` from the guild prefixes."},
-						 {"list", "Lists all guild prefixes."}}))
+					.examples(Examples{
+						{"add test", "Adds `test` to the guild prefixes."},
+						{"remove test",
+						 "Removes `test` from the guild prefixes."},
+						{"list", "Lists all guild prefixes."}}))
 			.params({{"mode"}, {"prefix", false}})
 			.function(_prefix),
 		log);

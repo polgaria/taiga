@@ -8,7 +8,6 @@
 #include <taiga/Client.hpp>
 #include <taiga/Config.hpp>
 #include <taiga/command/categories/Category.hpp>
-#include <unordered_map>
 #include <unordered_set>
 
 namespace Taiga {
@@ -29,14 +28,14 @@ class Commands {
 		const std::string& description() const noexcept;
 		Metadata& description(const std::string& description) noexcept;
 
-		const std::unordered_map<std::string, std::string>& examples() const
+		const nlohmann::fifo_map<std::string, std::string>& examples() const
 			noexcept;
-		Metadata& examples(const std::unordered_map<std::string, std::string>&
+		Metadata& examples(const nlohmann::fifo_map<std::string, std::string>&
 							   examples) noexcept;
 
 	   private:
 		std::string _description;
-		std::unordered_map<std::string, std::string> _examples;
+		nlohmann::fifo_map<std::string, std::string> _examples;
 	};
 
 	class Command {

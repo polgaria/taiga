@@ -1,6 +1,7 @@
 #pragma once
 
 #include <spdlog/logger.h>
+#include <fifo_map.hpp>
 #include <iostream>
 
 #define COMMAND(name)                                             \
@@ -15,6 +16,9 @@ class Category {
 	virtual ~Category();
 	virtual void init(spdlog::logger&) {}
 	const std::string& get_name() const noexcept { return name; }
+
+   protected:
+	using Examples = nlohmann::fifo_map<std::string, std::string>;
 
    private:
 	std::string name;

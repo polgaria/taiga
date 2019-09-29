@@ -65,7 +65,7 @@ GETTER_SETTER(function, Command, Commands::Function&)
 GETTER_SETTER(owner_only, Command, bool&)
 
 GETTER_SETTER(description, Metadata, std::string&);
-using Examples = std::unordered_map<std::string, std::string>;
+using Examples = nlohmann::fifo_map<std::string, std::string>;
 GETTER_SETTER(examples, Metadata, Examples&);
 
 Taiga::Commands::MappedCommands Taiga::Commands::all;

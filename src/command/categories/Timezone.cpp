@@ -178,7 +178,7 @@ void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
 	using Command = Taiga::Commands::Command;
 
 	Taiga::Commands::add_command(  //
-		Taiga::Commands::Command()
+		Command()
 			.name("settz")
 			.aliases({"set_tz", "mytimeis"})
 			.category(*this)
@@ -187,18 +187,18 @@ void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
 			.function(set_tz),
 		log);
 	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
+		Command()
 			.name("tz")
 			.aliases({"time", "timefor"})
 			.category(*this)
-			.metadata(
-				Metadata()
-					.description("See your own or another user's time.")
-					.examples({{"", "Sends your current time and timezone."},
-							   {"Some User",
-								"Sends `Some User`'s current time, timezone "
-								"and the time difference between you and them, "
-								"if any."}}))
+			.metadata(Metadata()
+						  .description("See your own or another user's time.")
+						  .examples(Examples{
+							  {"", "Sends your current time and timezone."},
+							  {"Some User",
+							   "Sends `Some User`'s current time, timezone "
+							   "and the time difference between you and them, "
+							   "if any."}}))
 			.params({{"user", false}})
 			.function(tz),
 		log);
