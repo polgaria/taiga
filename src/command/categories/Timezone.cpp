@@ -192,7 +192,13 @@ void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
 			.aliases({"time", "timefor"})
 			.category(*this)
 			.metadata(
-				Metadata().description("See your own or another user's time."))
+				Metadata()
+					.description("See your own or another user's time.")
+					.examples({{"", "Sends your current time and timezone."},
+							   {"Some User",
+								"Sends `Some User`'s current time, timezone "
+								"and the time difference between you and them, "
+								"if any."}}))
 			.params({{"user", false}})
 			.function(tz),
 		log);

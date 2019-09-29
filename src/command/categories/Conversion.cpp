@@ -80,8 +80,10 @@ void Taiga::Command::Categories::Conversion::init(spdlog::logger& log) {
 		Taiga::Commands::Command()
 			.name("money")
 			.category(*this)
-			.metadata(
-				Metadata().description("Converts currency to other currency."))
+			.metadata(Metadata()
+						  .description("Converts currency to other currency.")
+						  .examples({{"usd bgn", "Converts 1 USD to BGN."},
+									 {"usd bgn 5", "Converts 5 USD to BGN"}}))
 			.params({{"currency to convert from"},
 					 {"currency to convert to"},
 					 {"amount", false}})
