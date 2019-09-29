@@ -41,30 +41,35 @@ COMMAND(_kill) {
 }
 
 void Taiga::Command::Categories::Miscellaneous::init(spdlog::logger& log) {
-	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
+	using Metadata = Taiga::Commands::Metadata;
+	using Command = Taiga::Commands::Command;
+
+	Taiga::Commands::add_command(  //
+		Command()
 			.name("rate")
-			.description("Rates things on a scale of 0 to 10.")
+			.metadata(
+				Metadata().description("Rates things on a scale of 0 to 10."))
 			.params({{"ratee"}})
 			.function(rate)
 			.category(*this),
 		log);
-	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
+	Taiga::Commands::add_command(  //
+		Command()
 			.name("progress")
-			.description("Progress to the end of the year.")
+			.metadata(
+				Metadata().description("Progress to the end of the year."))
 			.function(progress)
 			.category(*this),
 		log);
 	// clang-format off
 	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
+		Command()
 			.name("kva")
 			.function(kva)
 			.category(*this),
 		log);
 	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
+		Command()
 			.name("kill")
 			.owner_only(true)
 			.function(_kill)

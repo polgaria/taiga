@@ -56,12 +56,12 @@ COMMAND(help) {
 				for (auto& command : Taiga::Commands::all) {
 					if (command.second.category().get_name() ==
 						found_category.get_name()) {
-						output +=
-							fmt::format(!command.second.description().empty()
-											? "**{}** - {}\n"
-											: "**{}**\n",
-										command.second.name(),
-										command.second.description());
+						output += fmt::format(
+							!command.second.metadata().description().empty()
+								? "**{}** - {}\n"
+								: "**{}**\n",
+							command.second.name(),
+							command.second.metadata().description());
 					}
 				}
 
@@ -95,11 +95,11 @@ COMMAND(help) {
 							  .value(std::move(syntax))
 							  .is_inline(true)});
 
-		if (!command.description().empty()) {
-			embed.description(command.description());
+		if (!command.metadata().description().empty()) {
+			embed.description(command.metadata().description());
 		}
 		if (!command.aliases().empty()) {
-			auto& aliases = command.aliases();
+			const auto& aliases = command.aliases();
 
 			std::string aliases_string{};
 
@@ -117,6 +117,19 @@ COMMAND(help) {
 								  .name("**Aliases**")
 								  .value(std::move(aliases_string))
 								  .is_inline(true)});
+		}
+		if (!command.metadata().examples().empty()) {
+			std::string examples_string{};
+
+			for (const auto& example : command.metadata().examples()) {
+				examples_string += fmt::format("`> {}{} {}`\n", command_prefix,
+											   name, example.first);
+				examples_string += fmt::format("{}\n", example.second);
+			}
+
+			fields.push_back({field()
+								  .name("**Examples**")
+								  .value(std::move(examples_string))});
 		}
 
 		embed.fields(std::move(fields));
@@ -415,42 +428,60 @@ COMMAND(invite) {
 }
 
 void Taiga::Command::Categories::General::init(spdlog::logger& log) {
+	using Metadata = Taiga::Commands::Metadata;
+	using Command = Taiga::Commands::Command;
+
 	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
+		Command()
 			.name("help")
 			.category(*this)
-			.description("The command you're looking at right now.")
+			.metadata(
+				Metadata()
+					.description("The command you're looking at right now.")
+					.examples({{"{}help", "Lists all commands."},
+							   {"{}help help",
+								"Sends info about the `help` command."},
+							   {"{}help General",
+								"Sends info about the `General` category."}}))
 			.params({{"command", false}})
 			.function(help),
 		log);
 	Taiga::Commands::add_command(  //
-		Taiga::Commands::Command()
+		Command()
 			.name("info")
 			.category(*this)
-			.description("Bot info.")
+			.metadata(Metadata().description("Bot info."))
 			.function(info),
 		log);
 	Taiga::Commands::add_command(  //
-		Taiga::Commands::Command()
+		Command()
 			.name("server")
 			.category(*this)
-			.description("Server info.")
+			.metadata(Metadata().description("Server info."))
 			.function(server),
 		log);
 	Taiga::Commands::add_command(  //
-		Taiga::Commands::Command()
+		Command()
 			.name("prefix")
 			.category(*this)
-			.description("Adds/removes a server-specific prefix, depending on "
-						 "the mode requested.\n"
-						 "Possible modes: `add`, `remove`/`delete`, `list`.\n"
-						 "Requires the `Manage Messages` permission.")
+			.metadata(
+				Metadata()
+					.description(
+						"Adds/removes a server-specific prefix, depending on "
+						"the mode requested.\n"
+						"Possible modes: `add`, `remove`/`delete`, `list`.\n"
+						"Requires the `Manage Messages` permission.")
+					.examples(
+						{{"add test", "Adds `test` to the guild prefixes."},
+						 {"remove test",
+						  "Removes `test` from the guild prefixes."},
+						 {"list", "Lists all guild prefixes."}}))
 			.params({{"mode"}, {"prefix", false}})
 			.function(_prefix),
 		log);
 	// clang-format off
 	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
+		Command()
 			.name("invite")
 			.function(invite)
 			.category(*this),

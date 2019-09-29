@@ -16,17 +16,22 @@ COMMAND(toradora) {
 }
 
 void Taiga::Command::Categories::Reddit::init(spdlog::logger& log) {
-	Taiga::Commands::add_command(
+	using Metadata = Taiga::Commands::Metadata;
+	using Command = Taiga::Commands::Command;
+
+	Taiga::Commands::add_command(  //
 		Taiga::Commands::Command()
 			.name("taiga")
-			.description("Sends a random image from r/taiga")
+			.metadata(
+				Metadata().description("Sends a random image from r/taiga"))
 			.function(taiga)
 			.category(*this),
 		log);
 	Taiga::Commands::add_command(
 		Taiga::Commands::Command()
 			.name("toradora")
-			.description("Sends a random image from r/toradora")
+			.metadata(
+				Metadata().description("Sends a random image from r/toradora"))
 			.function(toradora)
 			.category(*this),
 		log);

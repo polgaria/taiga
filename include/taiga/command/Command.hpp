@@ -24,6 +24,21 @@ class Commands {
 		bool required = true;
 	};
 
+	class Metadata {
+	   public:
+		const std::string& description() const noexcept;
+		Metadata& description(const std::string& description) noexcept;
+
+		const std::unordered_map<std::string, std::string>& examples() const
+			noexcept;
+		Metadata& examples(const std::unordered_map<std::string, std::string>&
+							   examples) noexcept;
+
+	   private:
+		std::string _description;
+		std::unordered_map<std::string, std::string> _examples;
+	};
+
 	class Command {
 	   public:
 		const std::string& name() const noexcept;
@@ -39,8 +54,8 @@ class Commands {
 		Command& aliases(
 			const std::unordered_set<std::string>& aliases) noexcept;
 
-		const std::string& description() const noexcept;
-		Command& description(const std::string& description) noexcept;
+		const Metadata& metadata() const noexcept;
+		Command& metadata(const Metadata& metadata) noexcept;
 
 		const Function& function() const noexcept;
 		Command& function(const Function& function) noexcept;
@@ -53,7 +68,7 @@ class Commands {
 		Taiga::Command::Category _category = {"None"};
 		std::deque<Parameter> _params;
 		std::unordered_set<std::string> _aliases;
-		std::string _description;
+		Metadata _metadata = Metadata();
 		Function _function;
 		bool _owner_only = false;
 	};
