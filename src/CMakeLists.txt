@@ -6,6 +6,7 @@ set(HEADER_LIST
 	"${taiga_SOURCE_DIR}/include/taiga/command/categories/Conversion.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/command/categories/Timezone.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/command/categories/Miscellaneous.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/command/categories/Weather.hpp"	
 	"${taiga_SOURCE_DIR}/include/taiga/Config.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/util/Various.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/util/Math.hpp"
@@ -25,6 +26,7 @@ add_library(taiga
 	command/categories/Conversion.cpp
 	command/categories/Timezone.cpp
 	command/categories/Miscellaneous.cpp
+	command/categories/Weather.cpp
 	Client.cpp
 	${HEADER_LIST}
 )

@@ -95,3 +95,88 @@ float Taiga::Util::Various::conversion_rate(
 	}
 	return json[currency_to_currency].get<float>();
 }
+
+aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
+	const std::string& api_key, const std::string& location) {
+	using aegis::gateway::objects::field;
+	using aegis::gateway::objects::footer;
+	const auto request =
+		cpr::Get(cpr::Url{fmt::format("http://api.weatherstack.com/"
+									  "current?access_key={}&query={}",
+									  api_key, location)},
+				 cpr::Header{{"User-Agent", "taiga"}});
+
+	switch (request.status_code) {
+		case aegis::rest::http_code::ok: {
+			break;
+		}
+		case aegis::rest::http_code::too_many_requests: {
+			throw std::runtime_error("Ratelimited.");
+		}
+		case aegis::rest::http_code::service_unavailable:
+		case aegis::rest::http_code::internal_server_error:
+		case aegis::rest::http_code::server_down: {
+			throw std::runtime_error(
+				"Weather API is down. Please try again later.");
+		}
+		default: {
+			throw std::runtime_error("Unknown error.");
+		}
+	}
+
+	auto json = nlohmann::json::parse(std::move(request.text));
+
+	if (json.find("request") == json.end()) {
+		throw std::runtime_error("Invalid location.");
+	}
+
+	auto embed =
+		aegis::gateway::objects::embed()
+			.title(json["request"]["query"].get<std::string>())
+			.color(json["current"]["is_day"].get<std::string>() == "yes"
+					   ? 0xFDB813
+					   : 0);
+
+	const auto& weather_description = Taiga::Util::String::join(
+		json["current"]["weather_descriptions"].get<std::vector<std::string>>(),
+		"\n");
+	embed.description(fmt::format("*{}*", std::move(weather_description)));
+
+	const auto& temperature = json["current"]["temperature"].get<int>();
+	const auto& feels_like = json["current"]["feelslike"].get<int>();
+	const auto& time = json["location"]["localtime"].get<std::string>();
+	const auto& humidity = json["current"]["humidity"].get<int>();
+	const auto& wind_speed = json["current"]["wind_speed"].get<int>();
+	const auto& precipation = json["current"]["precip"].get<float>();
+
+	std::vector<field> fields = {
+		field()
+			.name("Temperature")
+			.value(temperature != feels_like
+					   ? fmt::format("{}°C\n*Feels like {}°C*",
+									 std::move(temperature),
+									 std::move(feels_like))
+					   : fmt::format("{}°C", std::move(temperature))),
+		field().name("Time").value(std::move(time)),
+		field().name("Humidity").value(fmt::format("{}%", std::move(humidity))),
+		field()
+			.name("Wind Speed")
+			.value(fmt::format("{}km/h", std::move(wind_speed)))};
+
+	if (precipation != 0.f) {
+		fields.push_back(
+			field()
+				.name("Precipation")
+				.value(fmt::format("{}mm", std::move(precipation))));
+	}
+
+	embed.fields(fields);
+
+	auto thumbnail = aegis::gateway::objects::thumbnail();
+	thumbnail.url = json["current"]["weather_icons"]
+						.get<std::vector<std::string>>()
+						.front();
+	embed.thumbnail(std::move(thumbnail));
+
+	return embed;
+}

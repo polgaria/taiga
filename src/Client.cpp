@@ -124,6 +124,7 @@ void Taiga::Client::load_config() {
 	ENTRY(prefix, "Invalid config: The bot prefix is missing.")
 	ENTRY(name, "Invalid config: The bot name is missing.")
 	OPTIONAL_ENTRY(currency_conv_api_key)
+	OPTIONAL_ENTRY(weather_api_key)
 	OPTIONAL_ENTRY(git_repo)
 	OPTIONAL_ENTRY(owner_id)
 

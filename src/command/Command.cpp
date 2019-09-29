@@ -4,6 +4,7 @@
 #include <taiga/command/categories/Miscellaneous.hpp>
 #include <taiga/command/categories/Reddit.hpp>
 #include <taiga/command/categories/Timezone.hpp>
+#include <taiga/command/categories/Weather.hpp>
 
 using Taiga::Commands;
 using Command = Taiga::Commands::Command;
@@ -54,6 +55,7 @@ void Commands::add_commands(spdlog::logger& log) {
 	INIT_CATEGORY(Conversion);
 	INIT_CATEGORY(Timezone);
 	INIT_CATEGORY(Miscellaneous);
+	INIT_CATEGORY(Weather);
 }
 
 GETTER_SETTER(name, Command, std::string&)
