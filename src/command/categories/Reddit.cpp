@@ -20,7 +20,7 @@ void Taiga::Command::Categories::Reddit::init(spdlog::logger& log) {
 	using Command = Taiga::Commands::Command;
 
 	Taiga::Commands::add_command(  //
-		Taiga::Commands::Command()
+		Command()
 			.name("taiga")
 			.metadata(
 				Metadata().description("Sends a random image from r/taiga"))
@@ -28,7 +28,7 @@ void Taiga::Command::Categories::Reddit::init(spdlog::logger& log) {
 			.category(*this),
 		log);
 	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
+		Command()
 			.name("toradora")
 			.metadata(
 				Metadata().description("Sends a random image from r/toradora"))
