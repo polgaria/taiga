@@ -3,7 +3,7 @@
 #include <mongocxx/pool.hpp>
 #include <taiga/Client.hpp>
 #include <taiga/Config.hpp>
-#include <taiga/command/Command.hpp>
+#include <taiga/command/Commands.hpp>
 
 int main() {
 	aegis::core bot(spdlog::level::trace);

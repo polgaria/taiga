@@ -1,10 +1,8 @@
 #pragma once
 
-#include <aegis/gateway/objects/message.hpp>
 #include <deque>
 #include <fifo_map.hpp>
 #include <functional>
-#include <iostream>
 #include <taiga/Client.hpp>
 #include <taiga/Config.hpp>
 #include <taiga/command/categories/Category.hpp>
@@ -18,9 +16,19 @@ class Commands {
 		const std::deque<std::string>& params,
 		const std::string& command_prefix, Taiga::Client& client)>;
 
-	struct Parameter {
-		std::string_view name;
-		bool required = true;
+	class Parameter {
+	   public:
+		Parameter(std::string_view name);
+
+		const std::string_view& name() const noexcept;
+		Parameter& name(const std::string_view& name) noexcept;
+
+		const bool& required() const noexcept;
+		Parameter& required(const bool& required) noexcept;
+
+	   private:
+		std::string_view _name;
+		bool _required = true;
 	};
 
 	class Metadata {
@@ -30,7 +38,7 @@ class Commands {
 
 		const nlohmann::fifo_map<std::string, std::string>& examples() const
 			noexcept;
-		Metadata& examples(const nlohmann::fifo_map<std::string, std::string>&
+		Metadata& examples(const nlohmann::fifo_map<std::string, std::string>&&
 							   examples) noexcept;
 
 	   private:
@@ -40,11 +48,14 @@ class Commands {
 
 	class Command {
 	   public:
+		Command();
+		Command(std::string name);
+
 		const std::string& name() const noexcept;
 		Command& name(const std::string& name) noexcept;
 
-		const Taiga::Command::Category& category() const noexcept;
-		Command& category(const Taiga::Command::Category& category) noexcept;
+		const Taiga::Category& category() const noexcept;
+		Command& category(const Taiga::Category& category) noexcept;
 
 		const std::deque<Parameter>& params() const noexcept;
 		Command& params(const std::deque<Parameter>& params) noexcept;
@@ -64,7 +75,7 @@ class Commands {
 
 	   private:
 		std::string _name;
-		Taiga::Command::Category _category = {"None"};
+		Taiga::Category _category = Taiga::Category("None");
 		std::deque<Parameter> _params;
 		std::unordered_set<std::string> _aliases;
 		Metadata _metadata = Metadata();
@@ -74,7 +85,7 @@ class Commands {
 
 	using MappedCommands = nlohmann::fifo_map<std::string, Command>;
 	static MappedCommands all;
-	static std::unordered_map<std::string, Taiga::Command::Category> categories;
+	static std::unordered_map<std::string, Taiga::Category> categories;
 
 	static void add_command(Command command, spdlog::logger& log);
 	static void add_commands(spdlog::logger& log);

@@ -2,11 +2,10 @@
 
 #include <taiga/command/categories/Category.hpp>
 
-namespace Taiga::Command::Categories {
-class Reddit : public Taiga::Command::Category {
+namespace Taiga::Categories {
+class Reddit : public Taiga::Category {
    public:
 	Reddit(const std::string&);
-
 	void init(spdlog::logger& log) override;
 };
-}  // namespace Taiga::Command::Categories
+}  // namespace Taiga::Categories

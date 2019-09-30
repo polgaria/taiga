@@ -4,13 +4,13 @@
 #include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
-#include <taiga/command/Command.hpp>
+#include <taiga/command/Commands.hpp>
 #include <taiga/command/categories/Timezone.hpp>
 #include <taiga/util/Command.hpp>
 #include <taiga/util/String.hpp>
 
-Taiga::Command::Categories::Timezone::Timezone(const std::string& _name)
-	: Taiga::Command::Category(_name) {}
+Taiga::Categories::Timezone::Timezone(const std::string& _name)
+	: Taiga::Category(_name) {}
 
 COMMAND(set_tz) {
 	using bsoncxx::builder::stream::close_document;
@@ -173,22 +173,21 @@ COMMAND(tz) {
 	obj.channel.create_message(std::move(output));
 }
 
-void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
+void Taiga::Categories::Timezone::init(spdlog::logger& log) {
 	using Metadata = Taiga::Commands::Metadata;
 	using Command = Taiga::Commands::Command;
+	using Parameter = Taiga::Commands::Parameter;
 
 	Taiga::Commands::add_command(  //
-		Command()
-			.name("settz")
+		Command("settz")
 			.aliases({"set_tz", "mytimeis"})
 			.category(*this)
 			.metadata(Metadata().description("Set your timezone."))
-			.params({{"timezone"}})
+			.params({Parameter("timezone")})
 			.function(set_tz),
 		log);
 	Taiga::Commands::add_command(
-		Command()
-			.name("tz")
+		Command("tz")
 			.aliases({"time", "timefor"})
 			.category(*this)
 			.metadata(Metadata()
@@ -199,7 +198,7 @@ void Taiga::Command::Categories::Timezone::init(spdlog::logger& log) {
 							   "Sends `Some User`'s current time, timezone "
 							   "and the time difference between you and them, "
 							   "if any."}}))
-			.params({{"user", false}})
+			.params({Parameter("user").required(false)})
 			.function(tz),
 		log);
 }

@@ -2,10 +2,10 @@
 
 #include <taiga/command/categories/Category.hpp>
 
-namespace Taiga::Command::Categories {
-class General : Taiga::Command::Category {
+namespace Taiga::Categories {
+class General : Taiga::Category {
    public:
 	General(const std::string&);
 	void init(spdlog::logger& log) override;
 };
-}  // namespace Taiga::Command::Categories
+}  // namespace Taiga::Categories

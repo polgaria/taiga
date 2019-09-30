@@ -1,5 +1,5 @@
 set(HEADER_LIST
-	"${taiga_SOURCE_DIR}/include/taiga/command/Command.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/command/Commands.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/command/categories/Category.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/command/categories/General.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/command/categories/Reddit.hpp"
@@ -19,7 +19,7 @@ add_library(taiga
 	util/Command.cpp
 	util/Various.cpp
 	util/String.cpp
-	command/Command.cpp
+	command/Commands.cpp
 	command/categories/Category.cpp
 	command/categories/General.cpp
 	command/categories/Reddit.cpp

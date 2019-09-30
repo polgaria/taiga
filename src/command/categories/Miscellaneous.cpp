@@ -1,12 +1,11 @@
 #include <aegis.hpp>
-#include <taiga/command/Command.hpp>
+#include <taiga/command/Commands.hpp>
 #include <taiga/command/categories/Miscellaneous.hpp>
 #include <taiga/util/String.hpp>
 #include <taiga/util/Various.hpp>
 
-Taiga::Command::Categories::Miscellaneous::Miscellaneous(
-	const std::string& _name)
-	: Taiga::Command::Category(_name) {}
+Taiga::Categories::Miscellaneous::Miscellaneous(const std::string& _name)
+	: Taiga::Category(_name) {}
 
 COMMAND(rate) {
 	const auto ratee = Taiga::Util::String::join(params, " ");
@@ -35,27 +34,21 @@ COMMAND(kva) {
 		"ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку");
 }
 
-COMMAND(_kill) {
-	obj.channel.create_message("bye").then(
-		[&](const auto&&) { client.get_bot().shutdown(); });
-}
-
-void Taiga::Command::Categories::Miscellaneous::init(spdlog::logger& log) {
-	using Metadata = Taiga::Commands::Metadata;
+void Taiga::Categories::Miscellaneous::init(spdlog::logger& log) {
 	using Command = Taiga::Commands::Command;
+	using Metadata = Taiga::Commands::Metadata;
+	using Parameter = Taiga::Commands::Parameter;
 
 	Taiga::Commands::add_command(  //
-		Command()
-			.name("rate")
+		Command("rate")
 			.metadata(
 				Metadata().description("Rates things on a scale of 0 to 10."))
-			.params({{"ratee"}})
+			.params({Parameter("ratee")})
 			.function(rate)
 			.category(*this),
 		log);
 	Taiga::Commands::add_command(  //
-		Command()
-			.name("progress")
+		Command("progress")
 			.metadata(
 				Metadata().description("Progress to the end of the year."))
 			.function(progress)
@@ -63,16 +56,18 @@ void Taiga::Command::Categories::Miscellaneous::init(spdlog::logger& log) {
 		log);
 	// clang-format off
 	Taiga::Commands::add_command(
-		Command()
-			.name("kva")
+		Command("ква")
 			.function(kva)
 			.category(*this),
 		log);
 	Taiga::Commands::add_command(
-		Command()
-			.name("kill")
+		Command("kill")
 			.owner_only(true)
-			.function(_kill)
+			.function(
+				[](const auto& obj, const auto&, const auto&, auto& client) {
+					obj.channel.create_message("bye").then(
+						[&client](const auto&&) { client.get_bot().shutdown(); });
+				})
 			.category(*this),
 		log);
 	// clang-format on

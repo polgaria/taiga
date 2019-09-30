@@ -1,12 +1,12 @@
 #include <cpr/cpr.h>
 #include <aegis.hpp>
-#include <taiga/command/Command.hpp>
+#include <taiga/command/Commands.hpp>
 #include <taiga/command/categories/Weather.hpp>
 #include <taiga/util/String.hpp>
 #include <taiga/util/Various.hpp>
 
-Taiga::Command::Categories::Weather::Weather(const std::string& _name)
-	: Taiga::Command::Category(_name) {}
+Taiga::Categories::Weather::Weather(const std::string& _name)
+	: Taiga::Category(_name) {}
 
 COMMAND(weather) {
 	if (!client.get_config().weather_api_key) {
@@ -25,15 +25,15 @@ COMMAND(weather) {
 	}
 }
 
-void Taiga::Command::Categories::Weather::init(spdlog::logger& log) {
+void Taiga::Categories::Weather::init(spdlog::logger& log) {
 	using Metadata = Taiga::Commands::Metadata;
 	using Command = Taiga::Commands::Command;
+	using Parameter = Taiga::Commands::Parameter;
 
 	Taiga::Commands::add_command(  //
-		Command()
-			.name("weather")
+		Command("weather")
 			.metadata(Metadata().description(""))
-			.params({{"location"}})
+			.params({Parameter("location")})
 			.function(weather)
 			.category(*this),
 		log);

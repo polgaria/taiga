@@ -3,7 +3,7 @@
 #include <memory>
 #include <mongocxx/client.hpp>
 #include <taiga/Client.hpp>
-#include <taiga/command/Command.hpp>
+#include <taiga/command/Commands.hpp>
 #include <taiga/util/String.hpp>
 
 #define ENTRY(name, error_message)                         \
@@ -94,7 +94,7 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 		// check how many parameters are required
 		unsigned short required_params = 0;
 		for (const auto& param : found_command->second.params()) {
-			if (param.required) {
+			if (param.required()) {
 				required_params++;
 			}
 		}

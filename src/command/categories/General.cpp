@@ -1,16 +1,15 @@
 #include <date/date.h>
 #include <aegis.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
-#include <iostream>
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
-#include <taiga/command/Command.hpp>
+#include <taiga/command/Commands.hpp>
 #include <taiga/command/categories/General.hpp>
 #include <taiga/util/Command.hpp>
 #include <taiga/util/String.hpp>
 
-Taiga::Command::Categories::General::General(const std::string& _name)
-	: Taiga::Command::Category(_name) {}
+Taiga::Categories::General::General(const std::string& _name)
+	: Taiga::Category(_name) {}
 
 COMMAND(help) {
 	using aegis::gateway::objects::field;
@@ -34,23 +33,19 @@ COMMAND(help) {
 		// jesus christ this is ugly
 		const auto& found_command = std::find_if(
 			Taiga::Commands::all.begin(), Taiga::Commands::all.end(),
-			[&name](const std::pair<std::string, Taiga::Commands::Command>&
-						command) {
+			[&name](const auto& command) {
 				return Taiga::Util::String::to_lower(command.first) == name;
 			});
 		// if no command was found (or the type explicitly stated is category)
 		if (found_command == Taiga::Commands::all.end() || type == "category") {
 			const auto& _found_category =
 				// jesus christ this is ugly
-				std::find_if(
-					Taiga::Commands::categories.begin(),
-					Taiga::Commands::categories.end(),
-					[&name](
-						const std::pair<std::string, Taiga::Command::Category>&
-							category) {
-						return Taiga::Util::String::to_lower(
-								   category.second.get_name()) == name;
-					});
+				std::find_if(Taiga::Commands::categories.begin(),
+							 Taiga::Commands::categories.end(),
+							 [&name](const auto& category) {
+								 return Taiga::Util::String::to_lower(
+											category.second.get_name()) == name;
+							 });
 
 			// then try to find a category
 			if (_found_category != Taiga::Commands::categories.end() &&
@@ -103,7 +98,7 @@ COMMAND(help) {
 								command_prefix, name)};
 		for (const auto& param : command.params()) {
 			syntax +=
-				fmt::format(param.required ? "<{}> " : "[{}] ", param.name);
+				fmt::format(param.required() ? "<{}> " : "[{}] ", param.name());
 		}
 		syntax += '`';
 
@@ -444,13 +439,13 @@ COMMAND(invite) {
 					client.get_bot().get_id().get()));
 }
 
-void Taiga::Command::Categories::General::init(spdlog::logger& log) {
-	using Metadata = Taiga::Commands::Metadata;
+void Taiga::Categories::General::init(spdlog::logger& log) {
 	using Command = Taiga::Commands::Command;
+	using Metadata = Taiga::Commands::Metadata;
+	using Parameter = Taiga::Commands::Parameter;
 
 	Taiga::Commands::add_command(
-		Command()
-			.name("help")
+		Command("help")
 			.category(*this)
 			.metadata(
 				Metadata()
@@ -465,26 +460,24 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 						{"help command",
 						 "Sends help for the `help` **command**. (note the "
 						 "explicitly stated type!)"}}))
-			.params({{"command", false}, {"type", false}})
+			.params({Parameter("name").required(false),
+					 Parameter("type").required(false)})
 			.function(help),
 		log);
 	Taiga::Commands::add_command(  //
-		Command()
-			.name("info")
+		Command("info")
 			.category(*this)
 			.metadata(Metadata().description("Bot info."))
 			.function(info),
 		log);
 	Taiga::Commands::add_command(  //
-		Command()
-			.name("server")
+		Command("server")
 			.category(*this)
 			.metadata(Metadata().description("Server info."))
 			.function(server),
 		log);
 	Taiga::Commands::add_command(  //
-		Command()
-			.name("prefix")
+		Command("prefix")
 			.category(*this)
 			.metadata(
 				Metadata()
@@ -500,13 +493,12 @@ void Taiga::Command::Categories::General::init(spdlog::logger& log) {
 						{"remove test",
 						 "Removes `test` from the guild prefixes."},
 						{"list", "Lists all guild prefixes."}}))
-			.params({{"mode"}, {"prefix", false}})
+			.params({Parameter("mode"), Parameter("prefix").required(false)})
 			.function(_prefix),
 		log);
 	// clang-format off
 	Taiga::Commands::add_command(
-		Command()
-			.name("invite")
+		Command("invite")
 			.function(invite)
 			.category(*this),
 		log);

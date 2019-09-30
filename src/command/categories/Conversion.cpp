@@ -1,11 +1,11 @@
 #include <aegis.hpp>
-#include <taiga/command/Command.hpp>
+#include <taiga/command/Commands.hpp>
 #include <taiga/command/categories/Conversion.hpp>
 #include <taiga/util/String.hpp>
 #include <taiga/util/Various.hpp>
 
-Taiga::Command::Categories::Conversion::Conversion(const std::string& _name)
-	: Taiga::Command::Category(_name) {}
+Taiga::Categories::Conversion::Conversion(const std::string& _name)
+	: Taiga::Category(_name) {}
 
 COMMAND(money) {
 	const auto currency_x = Taiga::Util::String::to_upper(params.front());
@@ -72,38 +72,36 @@ COMMAND(mbs) {
 		fmt::format("{}Mbps is {:.2f}Mb/s", value, value / 8));
 }
 
-void Taiga::Command::Categories::Conversion::init(spdlog::logger& log) {
-	using Metadata = Taiga::Commands::Metadata;
+void Taiga::Categories::Conversion::init(spdlog::logger& log) {
 	using Command = Taiga::Commands::Command;
+	using Metadata = Taiga::Commands::Metadata;
+	using Parameter = Taiga::Commands::Parameter;
 
 	Taiga::Commands::add_command(
-		Taiga::Commands::Command()
-			.name("money")
+		Command("money")
 			.category(*this)
 			.metadata(
 				Metadata()
 					.description("Converts currency to other currency.")
 					.examples(Examples{{"usd bgn", "Converts 1 USD to BGN."},
 									   {"usd bgn 5", "Converts 5 USD to BGN"}}))
-			.params({{"currency to convert from"},
-					 {"currency to convert to"},
-					 {"amount", false}})
+			.params({Parameter("currency to convert from"),
+					 Parameter("currency to convert to"),
+					 Parameter("amount").required(false)})
 			.function(money),
 		log);
 	Taiga::Commands::add_command(  //
-		Taiga::Commands::Command()
-			.name("mbps")
+		Command("mbps")
 			.category(*this)
 			.metadata(Metadata().description("Converts Mb/s to Mbps."))
-			.params({{"value", false}})
+			.params({Parameter("value").required(false)})
 			.function(mbps),
 		log);
 	Taiga::Commands::add_command(  //
-		Taiga::Commands::Command()
-			.name("mbs")
+		Command("mbs")
 			.category(*this)
 			.metadata(Metadata().description("Converts Mbps to Mb/s."))
-			.params({{"value", false}})
+			.params({Parameter("value").required(false)})
 			.function(mbs),
 		log);
 }
