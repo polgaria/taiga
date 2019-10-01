@@ -134,7 +134,7 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 			.title(json["request"]["query"].get<std::string>())
 			.color(json["current"]["is_day"].get<std::string>() == "yes"
 					   ? 0xFDB813
-					   : 0x003366);
+					   : 0x0F1112);
 
 	const auto& weather_description = Taiga::Util::String::join(
 		json["current"]["weather_descriptions"].get<std::vector<std::string>>(),

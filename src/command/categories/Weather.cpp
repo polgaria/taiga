@@ -31,16 +31,16 @@ void Taiga::Categories::Weather::init(spdlog::logger& log) {
 	using Command = Taiga::Commands::Command;
 	using Parameter = Taiga::Commands::Parameter;
 
-	Taiga::Commands::add_command(  //
+	Taiga::Commands::add_command(
 		Command("weather")
 			.metadata(
 				Metadata()
 					.description(
 						"Shows the current weather in the specified location.")
 					.examples(
-						Examples{"Plovdiv",
-								 "Searches for Plovdiv and sends information "
-								 "about its current weather."}))
+						Examples{{"Plovdiv",
+								  "Searches for Plovdiv and sends information "
+								  "about its current weather."}}))
 			.params({Parameter("location")})
 			.function(weather)
 			.category(*this),
