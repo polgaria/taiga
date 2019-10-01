@@ -1,4 +1,5 @@
-#include <aegis.hpp>
+#include <aegis/channel.hpp>
+#include <aegis/gateway/events/message_create.hpp>
 #include <taiga/command/Commands.hpp>
 #include <taiga/command/categories/Miscellaneous.hpp>
 #include <taiga/util/String.hpp>
@@ -29,10 +30,7 @@ COMMAND(progress) {
 	obj.channel.create_message(fmt::format("{} {:.2f}%", msg, percent));
 }
 
-COMMAND(kva) {
-	obj.channel.create_message(
-		"ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку");
-}
+COMMAND(kva) {}
 
 void Taiga::Categories::Miscellaneous::init(spdlog::logger& log) {
 	using Command = Taiga::Commands::Command;
@@ -56,8 +54,12 @@ void Taiga::Categories::Miscellaneous::init(spdlog::logger& log) {
 		log);
 	// clang-format off
 	Taiga::Commands::add_command(
-		Command("ква")
-			.function(kva)
+		Command("kva")
+				.function([](const auto& obj, const auto&, const auto&, const auto&){
+					obj.channel.create_message(
+						"ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку");
+				})
+			.aliases({"ква"})
 			.category(*this),
 		log);
 	Taiga::Commands::add_command(

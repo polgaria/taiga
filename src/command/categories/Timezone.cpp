@@ -1,6 +1,5 @@
 #include <date/date.h>
 #include <date/tz.h>
-#include <aegis.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>

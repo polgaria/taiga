@@ -1,6 +1,6 @@
 #pragma once
 
-#include <aegis.hpp>
+#include <aegis/gateway/events/message_create.hpp>
 #include <mongocxx/pool.hpp>
 #include <taiga/Config.hpp>
 

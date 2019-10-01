@@ -1,6 +1,5 @@
 #include <cpr/cpr.h>
 #include <date/date.h>
-#include <aegis.hpp>
 #include <nlohmann/json.hpp>
 #include <taiga/util/Math.hpp>
 #include <taiga/util/String.hpp>

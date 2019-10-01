@@ -1,4 +1,4 @@
-#include <aegis.hpp>
+#include <aegis/channel.hpp>
 #include <taiga/command/Commands.hpp>
 #include <taiga/command/categories/Conversion.hpp>
 #include <taiga/util/String.hpp>

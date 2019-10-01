@@ -1,5 +1,6 @@
 #include <cpr/cpr.h>
-#include <aegis.hpp>
+#include <aegis/channel.hpp>
+#include <aegis/gateway/events/message_create.hpp>
 #include <taiga/command/Commands.hpp>
 #include <taiga/command/categories/Weather.hpp>
 #include <taiga/util/String.hpp>

@@ -1,6 +1,9 @@
+#include <aegis/channel.hpp>
+#include <aegis/gateway/events/message_create.hpp>
+#include <aegis/guild.hpp>
+#include <aegis/user.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/json.hpp>
-#include <memory>
 #include <mongocxx/client.hpp>
 #include <taiga/Client.hpp>
 #include <taiga/command/Commands.hpp>

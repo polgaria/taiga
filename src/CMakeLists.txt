@@ -40,7 +40,7 @@ target_include_directories(taiga PUBLIC
 )
 
 target_link_libraries(taiga PUBLIC
-	date_interface
+	date	
 	tz
 	fifo_map
 	${CPR_LIBRARIES}

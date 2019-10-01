@@ -4,16 +4,14 @@
 
 std::deque<std::string> Taiga::Util::String::split(const std::string& source,
 												   const char& delim) {
-	std::stringstream ss(source);
-	std::string item;
-	std::deque<std::string> target;
-	while (std::getline(ss, item, delim)) {
-		if (!item.empty()) {
-			target.push_back(item);
-		}
+	std::deque<std::string> tokens;
+	std::size_t start = 0, end = 0;
+	while ((end = source.find(delim, start)) != std::string::npos) {
+		tokens.push_back(source.substr(start, end - start));
+		start = end + 1;
 	}
-
-	return target;
+	tokens.push_back(source.substr(start));
+	return tokens;
 }
 
 std::deque<std::string> Taiga::Util::String::split_command(
