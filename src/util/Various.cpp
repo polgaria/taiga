@@ -134,7 +134,7 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 			.title(json["request"]["query"].get<std::string>())
 			.color(json["current"]["is_day"].get<std::string>() == "yes"
 					   ? 0xFDB813
-					   : 0);
+					   : 0x003366);
 
 	const auto& weather_description = Taiga::Util::String::join(
 		json["current"]["weather_descriptions"].get<std::vector<std::string>>(),
@@ -146,6 +146,7 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 	const auto& time = json["location"]["localtime"].get<std::string>();
 	const auto& humidity = json["current"]["humidity"].get<int>();
 	const auto& wind_speed = json["current"]["wind_speed"].get<int>();
+	const auto& wind_direction = json["current"]["wind_dir"].get<std::string>();
 	const auto& precipation = json["current"]["precip"].get<float>();
 
 	std::vector<field> fields = {
@@ -157,10 +158,17 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 									 std::move(feels_like))
 					   : fmt::format("{}°C", std::move(temperature))),
 		field().name("Time").value(std::move(time)),
-		field().name("Humidity").value(fmt::format("{}%", std::move(humidity))),
 		field()
-			.name("Wind Speed")
-			.value(fmt::format("{}km/h", std::move(wind_speed)))};
+			.name("Humidity")
+			.value(fmt::format("{}%", std::move(humidity)))};
+
+	if (wind_speed != 0.f) {
+		fields.push_back(
+			field()
+				.name("Wind Speed/Direction")
+				.value(fmt::format("{}km/h | {}", std::move(wind_speed),
+								   std::move(wind_direction))));
+	}
 
 	if (precipation != 0.f) {
 		fields.push_back(
@@ -176,6 +184,9 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 						.get<std::vector<std::string>>()
 						.front();
 	embed.thumbnail(std::move(thumbnail));
+
+	embed.footer(
+		aegis::gateway::objects::footer("Powered by https://weatherstack.com"));
 
 	return embed;
 }
