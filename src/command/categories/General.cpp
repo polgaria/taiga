@@ -54,7 +54,7 @@ COMMAND(help) {
 				auto embed{
 					aegis::gateway::objects::embed()
 						.title(fmt::format("**{}**", found_category.get_name()))
-						.color(0x3498DB)};
+						.color(client.get_config().color)};
 				std::string output{};
 
 				// find commands in that category
@@ -91,7 +91,7 @@ COMMAND(help) {
 
 		auto embed{aegis::gateway::objects::embed()
 					   .title(fmt::format("**{}**", name))
-					   .color(0x3498DB)};
+					   .color(client.get_config().color)};
 
 		auto syntax{fmt::format(command.params().empty() ? "`{}{}" : "`{}{} ",
 								command_prefix, name)};
@@ -151,8 +151,9 @@ COMMAND(help) {
 		return;
 	}
 
-	auto embed =
-		aegis::gateway::objects::embed().title("**Commands**").color(0x3498DB);
+	auto embed = aegis::gateway::objects::embed()
+					 .title("**Commands**")
+					 .color(client.get_config().color);
 	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
 	auto added = std::unordered_map<std::string, bool>();
 

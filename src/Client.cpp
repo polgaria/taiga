@@ -13,7 +13,6 @@
 	if (config_json.find(#name) != config_json.end() &&    \
 		config_json[#name].is_string()) {                  \
 		conf.name = config_json[#name].get<std::string>(); \
-                                                           \
 	} else {                                               \
 		throw std::runtime_error(error_message);           \
 	}
@@ -22,6 +21,16 @@
 	if (config_json.find(#name) != config_json.end() &&    \
 		config_json[#name].is_string()) {                  \
 		conf.name = config_json[#name].get<std::string>(); \
+	}
+
+#define ENTRY_STR_TO_NUM_OR(name, _or)                         \
+	if (config_json.find(#name) != config_json.end() &&        \
+		config_json[#name].is_string()) {                      \
+		conf.name = Taiga::Util::String::string_to_hex<int>(   \
+						config_json[#name].get<std::string>()) \
+						.value_or(_or);                        \
+	} else {                                                   \
+		conf.name = _or;                                       \
 	}
 
 void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
@@ -130,6 +139,7 @@ void Taiga::Client::load_config() {
 	OPTIONAL_ENTRY(weather_api_key)
 	OPTIONAL_ENTRY(git_repo)
 	OPTIONAL_ENTRY(owner_id)
+	ENTRY_STR_TO_NUM_OR(color, 0xEDC5B9)
 
 	this->config = conf;
 }

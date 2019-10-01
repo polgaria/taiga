@@ -23,6 +23,20 @@ class String {
 		return number;
 	}
 
+	template <typename T, typename = typename std::enable_if<
+							  std::is_arithmetic<T>::value, T>::type>
+	static std::optional<T> string_to_hex(const std::string& source) {
+		T hex;
+		std::stringstream stream;
+		stream << std::hex << source;
+		stream >> hex;
+
+		if (stream.fail()) {
+			return std::nullopt;
+		}
+		return hex;
+	}
+
 	// https://stackoverflow.com/questions/5288396/c-ostream-out-manipulation/5289170#5289170
 	template <typename Range, typename Value = typename Range::value_type>
 	static std::string join(const Range& elements,
