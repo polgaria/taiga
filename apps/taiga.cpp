@@ -7,7 +7,6 @@
 #include <mongocxx/pool.hpp>
 #include <taiga/Client.hpp>
 #include <taiga/Config.hpp>
-#include <taiga/command/Commands.hpp>
 
 int main() {
 	aegis::core bot(spdlog::level::trace);
@@ -21,10 +20,11 @@ int main() {
 	client.set_mongo_pool(std::move(mongo_pool));
 
 	client.load_config();
+	client.load_values_from_config();
 
+	client.load_categories(*bot.log);
 	bot.set_on_message_create(std::bind(&Taiga::Client::message_create, &client,
 										std::placeholders::_1));
-	Taiga::Commands::add_commands(*bot.log);
 
 	bot.run();
 	bot.yield();

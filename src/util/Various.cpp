@@ -1,5 +1,7 @@
 #include <cpr/cpr.h>
 #include <date/date.h>
+
+#include <aisaka/util/String.hpp>
 #include <nlohmann/json.hpp>
 #include <taiga/util/Math.hpp>
 #include <taiga/util/String.hpp>
@@ -136,7 +138,7 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 					   ? 0xFDB813
 					   : 0x0F1112);
 
-	const auto& weather_description = Taiga::Util::String::join(
+	const auto& weather_description = Aisaka::Util::String::join(
 		json["current"]["weather_descriptions"].get<std::vector<std::string>>(),
 		"\n");
 	embed.description(fmt::format("*{}*", std::move(weather_description)));

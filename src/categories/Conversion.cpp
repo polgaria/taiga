@@ -1,13 +1,13 @@
 #include <aegis/channel.hpp>
-#include <taiga/command/Commands.hpp>
-#include <taiga/command/categories/Conversion.hpp>
+#include <taiga/Client.hpp>
+#include <taiga/categories/Conversion.hpp>
 #include <taiga/util/String.hpp>
 #include <taiga/util/Various.hpp>
 
-Taiga::Categories::Conversion::Conversion(const std::string& _name)
-	: Taiga::Category(_name) {}
-
-COMMAND(money) {
+static void money(aegis::gateway::events::message_create& obj,
+				  Taiga::Client& client,
+				  const std::deque<std::string_view>& params,
+				  const std::string&) {
 	const auto currency_x = Taiga::Util::String::to_upper(params.front());
 	const auto currency_y = Taiga::Util::String::to_upper(params[1]);
 
@@ -44,7 +44,9 @@ COMMAND(money) {
 		"{:.2f} {} is worth {:.2f} {}", amount, currency_x, worth, currency_y));
 }
 
-COMMAND(mbps) {
+static void mbps(aegis::gateway::events::message_create& obj, Taiga::Client&,
+				 const std::deque<std::string_view>& params,
+				 const std::string&) {
 	const auto _value =
 		!params.empty()
 			? Taiga::Util::String::string_to_number<float>(params.front())
@@ -58,7 +60,9 @@ COMMAND(mbps) {
 		fmt::format("{}Mb/s is {:.2f}Mbps", value, value * 8));
 }
 
-COMMAND(mbs) {
+static void mbs(aegis::gateway::events::message_create& obj, Taiga::Client&,
+				const std::deque<std::string_view>& params,
+				const std::string&) {
 	const auto _value =
 		!params.empty()
 			? Taiga::Util::String::string_to_number<float>(params.front())
@@ -72,12 +76,13 @@ COMMAND(mbs) {
 		fmt::format("{}Mbps is {:.2f}Mb/s", value, value / 8));
 }
 
-void Taiga::Categories::Conversion::init(spdlog::logger& log) {
-	using Command = Taiga::Commands::Command;
-	using Metadata = Taiga::Commands::Metadata;
-	using Parameter = Taiga::Commands::Parameter;
+void Taiga::Categories::Conversion::init(
+	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
+	using Command = Aisaka::Command<Taiga::Client>;
+	using Metadata = Aisaka::Metadata;
+	using Parameter = Aisaka::Parameter;
 
-	Taiga::Commands::add_command(
+	commands.add_command(
 		Command("money")
 			.category(*this)
 			.metadata(
@@ -90,14 +95,14 @@ void Taiga::Categories::Conversion::init(spdlog::logger& log) {
 					 Parameter("amount").required(false)})
 			.function(money),
 		log);
-	Taiga::Commands::add_command(  //
+	commands.add_command(  //
 		Command("mbps")
 			.category(*this)
 			.metadata(Metadata().description("Converts Mb/s to Mbps."))
 			.params({Parameter("value").required(false)})
 			.function(mbps),
 		log);
-	Taiga::Commands::add_command(  //
+	commands.add_command(  //
 		Command("mbs")
 			.category(*this)
 			.metadata(Metadata().description("Converts Mbps to Mb/s."))

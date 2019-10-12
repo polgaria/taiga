@@ -1,24 +1,25 @@
 #include <date/date.h>
-#include <bsoncxx/builder/stream/document.hpp>
-#include <mongocxx/client.hpp>
-#include <mongocxx/uri.hpp>
-#include <taiga/command/Commands.hpp>
-#include <taiga/command/categories/General.hpp>
+
+#include <aisaka/util/String.hpp>
+#include <taiga/categories/General.hpp>
 #include <taiga/util/Command.hpp>
+#include <taiga/util/Math.hpp>
 #include <taiga/util/String.hpp>
 
-Taiga::Categories::General::General(const std::string& _name)
-	: Taiga::Category(_name) {}
-
-COMMAND(help) {
+static void help(aegis::gateway::events::message_create& obj,
+				 Taiga::Client& client,
+				 const std::deque<std::string_view>& params,
+				 const std::string& command_prefix) {
 	using aegis::gateway::objects::field;
 	auto fields = std::vector<field>();
+
+	const auto& commands = client.get_commands().all;
 
 	// if any parameters were passed
 	if (!params.empty()) {
 		std::string type;
 		if (params.size() > 1) {
-			type = Taiga::Util::String::to_lower(params[1]);
+			type = Aisaka::Util::String::to_lower(params[1]);
 		}
 
 		if (!type.empty() && type != "command" && type != "category") {
@@ -26,29 +27,27 @@ COMMAND(help) {
 			return;
 		}
 
-		const auto& name = Taiga::Util::String::to_lower(params.front());
+		const auto& name = Aisaka::Util::String::to_lower(params.front());
+		const auto& categories = client.get_commands().categories;
 
 		// try to find a command
 		// jesus christ this is ugly
 		const auto& found_command = std::find_if(
-			Taiga::Commands::all.begin(), Taiga::Commands::all.end(),
-			[&name](const auto& command) {
-				return Taiga::Util::String::to_lower(command.first) == name;
+			commands.begin(), commands.end(), [&name](const auto& command) {
+				return Aisaka::Util::String::to_lower(command.first) == name;
 			});
 		// if no command was found (or the type explicitly stated is category)
-		if (found_command == Taiga::Commands::all.end() || type == "category") {
+		if (found_command == commands.end() || type == "category") {
 			const auto& _found_category =
 				// jesus christ this is ugly
-				std::find_if(Taiga::Commands::categories.begin(),
-							 Taiga::Commands::categories.end(),
+				std::find_if(categories.begin(), categories.end(),
 							 [&name](const auto& category) {
-								 return Taiga::Util::String::to_lower(
+								 return Aisaka::Util::String::to_lower(
 											category.second.get_name()) == name;
 							 });
 
 			// then try to find a category
-			if (_found_category != Taiga::Commands::categories.end() &&
-				type != "command") {
+			if (_found_category != categories.end() && type != "command") {
 				const auto& found_category = _found_category->second;
 
 				auto embed{
@@ -58,7 +57,7 @@ COMMAND(help) {
 				std::string output{};
 
 				// find commands in that category
-				for (auto& command : Taiga::Commands::all) {
+				for (auto& command : commands) {
 					if (command.second.category().get_name() ==
 						found_category.get_name()) {
 						output += fmt::format(
@@ -87,7 +86,7 @@ COMMAND(help) {
 			return;
 		}
 
-		auto& command = Taiga::Commands::all[name];
+		const auto& command = commands.at(name.data());
 
 		auto embed{aegis::gateway::objects::embed()
 					   .title(fmt::format("**{}**", name))
@@ -112,7 +111,7 @@ COMMAND(help) {
 		if (!command.aliases().empty()) {
 			const auto& aliases = command.aliases();
 
-			std::string aliases_string{};
+			std::string aliases_string;
 
 			// if the command name used is an alias, add the actual command name
 			if (aliases.find(name) != aliases.end()) {
@@ -130,7 +129,7 @@ COMMAND(help) {
 								  .is_inline(true)});
 		}
 		if (!command.metadata().examples().empty()) {
-			std::string examples_string{};
+			std::string examples_string;
 
 			for (const auto& example : command.metadata().examples()) {
 				examples_string += fmt::format("`> {}{} {}`\n", command_prefix,
@@ -155,9 +154,9 @@ COMMAND(help) {
 					 .title("**Commands**")
 					 .color(client.get_config().color);
 	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
-	auto added = std::unordered_map<std::string, bool>();
+	auto added = std::unordered_set<std::string_view>();
 
-	for (const auto& command : Taiga::Commands::all) {
+	for (const auto& command : commands) {
 		// check if command is owner-only and if the user executing it is the
 		// bot's owner
 		if (client.get_config().owner_id && command.second.owner_only()) {
@@ -171,7 +170,7 @@ COMMAND(help) {
 
 		const auto& command_name = command.second.name();
 		if (!added.count(command_name)) {
-			added[command_name] = true;
+			added.insert(command_name);
 			fields_content[command.second.category().get_name()] +=
 				fmt::format("`{}` ", command_name);
 		}
@@ -186,9 +185,10 @@ COMMAND(help) {
 }
 
 // totally not stolen from aegisbot... shh..
-COMMAND(info) {
+static void info(aegis::gateway::events::message_create& obj,
+				 Taiga::Client& client, const std::deque<std::string_view>&,
+				 const std::string&) {
 	using aegis::gateway::objects::field;
-
 	const auto& bot_avatar = client.get_bot().self()->get_avatar();
 
 	std::mt19937 rand(static_cast<unsigned long>(obj.msg.get_id().get()));
@@ -197,12 +197,13 @@ COMMAND(info) {
 		aegis::gateway::objects::embed()
 			.title(client.get_config().name)
 			.description(fmt::format(
-				"{}\nMemory usage: **{}MB**",
+				"{}\nMemory usage: **{:.2f}MB**",
 				client.get_config().git_repo.has_value()
 					? fmt::format("[Source code]({})\n",
 								  client.get_config().git_repo.value())
 					: "",
-				aegis::utility::getCurrentRSS() / (1024 * 1024)))
+				Taiga::Util::Math::round_to_dec_places(
+					aegis::utility::getCurrentRSS() / std::pow(1024, 2), 2)))
 			.color(rand() % 0xFFFFFF)
 			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
 				"https://cdn.discordapp.com/avatars/{}/{}.webp?size=1024",
@@ -244,7 +245,8 @@ COMMAND(info) {
 	obj.channel.create_message_embed(aegis::create_message_t().embed(embed));
 }
 
-COMMAND(server) {
+static void server(aegis::gateway::events::message_create& obj, Taiga::Client&,
+				   const std::deque<std::string_view>&, const std::string&) {
 	using aegis::gateway::objects::field;
 
 	const auto& guild = obj.msg.get_guild();
@@ -286,165 +288,13 @@ COMMAND(server) {
 	obj.channel.create_message_embed(aegis::create_message_t().embed(embed));
 }
 
-// TODO: clean up this horrible mess
-COMMAND(_prefix) {
-	using bsoncxx::builder::stream::close_document;
-	using bsoncxx::builder::stream::document;
-	using bsoncxx::builder::stream::finalize;
-	using bsoncxx::builder::stream::open_document;
+void Taiga::Categories::General::init(
+	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
+	using Command = Aisaka::Command<Taiga::Client>;
+	using Metadata = Aisaka::Metadata;
+	using Parameter = Aisaka::Parameter;
 
-	const auto& guild = obj.msg.get_guild();
-	// TODO: handle this in Client::on_message, make it a command trait
-	const aegis::permission& user_perms =
-		guild.base_permissions(obj.msg.get_user());
-	const auto& mode = params.front();
-	if (!user_perms.can_manage_messages() && mode != "list") {
-		obj.channel.create_message(
-			"You're missing the `Manage Messages` permission!");
-		return;
-	}
-
-	const auto& mongo_client = client.get_mongo_pool().acquire();
-	const auto& db = (*mongo_client)[client.get_config().name];
-	auto prefixes = db["prefixes"];
-
-	const bsoncxx::document::view_or_value& guild_document =
-		document{} << "id" << guild.get_id() << finalize;
-
-	if (mode == "remove" || mode == "delete") {
-		if (params.size() == 1) {
-			obj.channel.create_message("Too few parameters.");
-			return;
-		}
-		const auto& prefix = params[1];
-
-		// check if there's only one prefix
-		const auto& has_one_prefix = prefixes.find_one(
-			// clang-format off
-			document{}
-					<< "id" << guild.get_id()
-					<< "prefix" << open_document
-					   << "$size" << 1
-					<< close_document
-					<< finalize
-			// clang-format on
-		);
-		if (has_one_prefix) {
-			prefixes.delete_one(guild_document);
-			obj.channel.create_message("Reset to default prefix.");
-			return;
-		}
-
-		const auto& delete_prefix = prefixes.update_one(
-			guild_document,
-			// clang-format off
-			document{}
-				<< "$pull" << open_document
-					<< "prefix" << prefix
-				<< close_document
-				<< finalize
-			// clang-format on
-		);
-
-		// check if there's only one prefix and it's the default prefix
-		const auto& has_one_prefix_default = prefixes.find_one(
-			// clang-format off
-					document{}
-							<< "id" << guild.get_id()
-							<< "prefix" << open_document
-							   << "$size" << 1
-							<< close_document
-							<< "prefix" << client.get_config().prefix
-							<< finalize
-			// clang-format on
-		);
-		// wow
-		if (has_one_prefix_default) {
-			prefixes.delete_one(guild_document);
-			obj.channel.create_message("Reset to default prefix.");
-			return;
-		}
-
-		// if no prefixes were deleted
-		if (delete_prefix->modified_count() == 0) {
-			obj.channel.create_message("Prefix not found!");
-		} else {
-			obj.channel.create_message(
-				fmt::format("Removed prefix `{}`.", prefix));
-		}
-		return;
-	} else if (mode == "add") {
-		if (params.size() == 1) {
-			obj.channel.create_message("Too few parameters.");
-			return;
-		}
-		const auto& prefix = params[1];
-
-		if (const auto& prefix_exists =
-				prefixes.find_one(document{} << "id" << guild.get_id()
-											 << "prefix" << prefix << finalize);
-			prefix_exists) {
-			obj.channel.create_message("Prefix already added!");
-			return;
-		}
-
-		// add the default prefix as well if there are currently no custom
-		// prefixes
-		if (const auto& document_exists = prefixes.find_one(guild_document);
-			!document_exists) {
-			// clang-format off
-			prefixes.update_one(guild_document,
-								document{}
-								<< "$push" << open_document
-									<< "prefix" << client.get_config().prefix
-								<< close_document
-								<< finalize,
-								mongocxx::options::update{}.upsert(true));
-			// clang-format on
-		}
-		// clang-format off
-		prefixes.update_one(guild_document,
-							document{}
-                            << "$push" << open_document
-                                << "prefix" << prefix
-                            << close_document
-                            << finalize,
-							mongocxx::options::update{}.upsert(true));
-		// clang-format on
-		obj.channel.create_message(fmt::format(
-			"`{}` has been added to the server's prefixes.", prefix));
-	} else if (mode == "list") {
-		const auto& guild_prefixes = prefixes.find_one(guild_document);
-		if (!guild_prefixes) {
-			obj.channel.create_message("This server has no custom prefixes!");
-			return;
-		}
-		std::string output{};
-		// iterate through guild prefixes
-		for (const auto& res :
-			 guild_prefixes->view()["prefix"].get_array().value) {
-			const auto& _prefix = std::string{res.get_utf8().value};
-			output += fmt::format("`{}`\n", _prefix);
-		}
-		obj.channel.create_message(output);
-	} else {
-		obj.channel.create_message("Invalid mode!");
-	}
-}
-
-COMMAND(invite) {
-	obj.channel.create_message(
-		fmt::format("https://discordapp.com/oauth2/"
-					"authorize?client_id={}&scope=bot&permissions=270400",
-					client.get_bot().get_id().get()));
-}
-
-void Taiga::Categories::General::init(spdlog::logger& log) {
-	using Command = Taiga::Commands::Command;
-	using Metadata = Taiga::Commands::Metadata;
-	using Parameter = Taiga::Commands::Parameter;
-
-	Taiga::Commands::add_command(
+	commands.add_command(
 		Command("help")
 			.category(*this)
 			.metadata(
@@ -454,53 +304,37 @@ void Taiga::Categories::General::init(spdlog::logger& log) {
 						{"", "Lists all commands."},
 						{"help", "Sends help for the `help` command."},
 						{"General", "Sends help for the `General` category."},
-						{"help category",
-						 "Sends help for the `help` **category**. "
+						{"weather category",
+						 "Sends help for the `weather` **category**. "
 						 "(note the explicitly stated type!)"},
-						{"help command",
-						 "Sends help for the `help` **command**. (note the "
+						{"weather command",
+						 "Sends help for the `weather` **command**. (note the "
 						 "explicitly stated type!)"}}))
 			.params({Parameter("name").required(false),
 					 Parameter("type").required(false)})
 			.function(help),
 		log);
-	Taiga::Commands::add_command(  //
+	commands.add_command(  //
 		Command("info")
 			.category(*this)
 			.metadata(Metadata().description("Bot info."))
 			.function(info),
 		log);
-	Taiga::Commands::add_command(  //
+	commands.add_command(  //
 		Command("server")
 			.category(*this)
 			.metadata(Metadata().description("Server info."))
 			.function(server),
 		log);
-	Taiga::Commands::add_command(  //
-		Command("prefix")
-			.category(*this)
-			.metadata(
-				Metadata()
-					.description(
-						"Adds/removes a server-specific prefix, depending "
-						"on "
-						"the mode requested.\n"
-						"Possible modes: `add`, `remove`/`delete`, "
-						"`list`.\n"
-						"Requires the `Manage Messages` permission.")
-					.examples(Examples{
-						{"add test", "Adds `test` to the guild prefixes."},
-						{"remove test",
-						 "Removes `test` from the guild prefixes."},
-						{"list", "Lists all guild prefixes."}}))
-			.params({Parameter("mode"), Parameter("prefix").required(false)})
-			.function(_prefix),
-		log);
-	// clang-format off
-	Taiga::Commands::add_command(
+	commands.add_command(
 		Command("invite")
-			.function(invite)
+			.function(
+				[](const auto& obj, auto& client, const auto&, const auto&) {
+					obj.channel.create_message(fmt::format(
+						"https://discordapp.com/oauth2/"
+						"authorize?client_id={}&scope=bot&permissions=270400",
+						client.get_bot().get_id().get()));
+				})
 			.category(*this),
 		log);
-	// clang-format on	
 }

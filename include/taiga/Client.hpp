@@ -1,26 +1,32 @@
 #pragma once
 
-#include <aegis/gateway/events/message_create.hpp>
-#include <mongocxx/pool.hpp>
+#include <aisaka/Client.hpp>
+#include <aisaka/command/Commands.hpp>
 #include <taiga/Config.hpp>
 
 namespace Taiga {
-class Client {
+class Client : public Aisaka::Client {
    public:
+	Client() : Aisaka::Client("", "", 0) {}
+	Client(const std::string& _default_prefix, const std::string& _bot_name,
+		   const int64_t& _owner_id)
+		: Aisaka::Client(_default_prefix, _bot_name, _owner_id) {}
+	virtual ~Client() override = default;
+
 	void load_config();
-	Taiga::Config::Config get_config() { return this->config; }
+	Taiga::Config::Config& get_config() noexcept { return this->config; }
 
-	void set_bot(aegis::core& _bot) { this->bot = &_bot; }
-	aegis::core& get_bot() { return *bot; }
+	void load_values_from_config();
 
-	void set_mongo_pool(mongocxx::pool&& client) { this->mongo_pool = &client; }
-	mongocxx::pool& get_mongo_pool() { return *mongo_pool; }
+	const Aisaka::Commands<Taiga::Client>& get_commands() const noexcept;
 
-	void message_create(aegis::gateway::events::message_create obj);
+	void load_categories(spdlog::logger& log);
+
+	virtual void message_create(
+		aegis::gateway::events::message_create obj) override;
 
    private:
-	aegis::core* bot;
-	mongocxx::pool* mongo_pool;
 	Taiga::Config::Config config;
+	Aisaka::Commands<Taiga::Client> _commands;
 };
 }  // namespace Taiga
