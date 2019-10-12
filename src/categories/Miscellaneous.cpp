@@ -1,17 +1,16 @@
 #include <aegis/channel.hpp>
 #include <aegis/gateway/events/message_create.hpp>
-#include <taiga/command/Commands.hpp>
-#include <taiga/command/categories/Miscellaneous.hpp>
-#include <taiga/util/String.hpp>
+#include <aisaka/util/String.hpp>
+#include <taiga/Client.hpp>
+#include <taiga/categories/Miscellaneous.hpp>
 #include <taiga/util/Various.hpp>
 
-Taiga::Categories::Miscellaneous::Miscellaneous(const std::string& _name)
-	: Taiga::Category(_name) {}
+static void rate(aegis::gateway::events::message_create& obj, Taiga::Client&,
+				 const std::deque<std::string_view>& params,
+				 const std::string&) {
+	const auto ratee = Aisaka::Util::String::join(params, " ");
 
-COMMAND(rate) {
-	const auto ratee = Taiga::Util::String::join(params, " ");
-
-	const auto hash = std::hash<std::string>();
+	const auto hash = std::hash<std::string_view>();
 	std::mt19937 rand(hash(ratee));
 
 	obj.channel.create_message(
@@ -19,7 +18,9 @@ COMMAND(rate) {
 					std::uniform_int_distribution<>{0, 10}(rand)));
 }
 
-COMMAND(progress) {
+static void progress(aegis::gateway::events::message_create& obj,
+					 Taiga::Client&, const std::deque<std::string_view>&,
+					 const std::string&) {
 	auto percent = Taiga::Util::Various::year_progress();
 	std::string msg;
 
@@ -30,14 +31,13 @@ COMMAND(progress) {
 	obj.channel.create_message(fmt::format("{} {:.2f}%", msg, percent));
 }
 
-COMMAND(kva) {}
+void Taiga::Categories::Miscellaneous::init(
+	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
+	using Command = Aisaka::Command<Taiga::Client>;
+	using Metadata = Aisaka::Metadata;
+	using Parameter = Aisaka::Parameter;
 
-void Taiga::Categories::Miscellaneous::init(spdlog::logger& log) {
-	using Command = Taiga::Commands::Command;
-	using Metadata = Taiga::Commands::Metadata;
-	using Parameter = Taiga::Commands::Parameter;
-
-	Taiga::Commands::add_command(  //
+	commands.add_command(  //
 		Command("rate")
 			.metadata(
 				Metadata().description("Rates things on a scale of 0 to 10."))
@@ -45,7 +45,7 @@ void Taiga::Categories::Miscellaneous::init(spdlog::logger& log) {
 			.function(rate)
 			.category(*this),
 		log);
-	Taiga::Commands::add_command(  //
+	commands.add_command(  //
 		Command("progress")
 			.metadata(
 				Metadata().description("Progress to the end of the year."))
@@ -53,7 +53,7 @@ void Taiga::Categories::Miscellaneous::init(spdlog::logger& log) {
 			.category(*this),
 		log);
 	// clang-format off
-	Taiga::Commands::add_command(
+	commands.add_command(
 		Command("kva")
 				.function([](const auto& obj, const auto&, const auto&, const auto&){
 					obj.channel.create_message(
@@ -62,11 +62,11 @@ void Taiga::Categories::Miscellaneous::init(spdlog::logger& log) {
 			.aliases({"ква"})
 			.category(*this),
 		log);
-	Taiga::Commands::add_command(
+	commands.add_command(
 		Command("kill")
 			.owner_only(true)
 			.function(
-				[](const auto& obj, const auto&, const auto&, auto& client) {
+				[](const auto& obj, auto& client, const auto&, const auto&) {
 					obj.channel.create_message("bye").then(
 						[&client](const auto&&) { client.get_bot().shutdown(); });
 				})

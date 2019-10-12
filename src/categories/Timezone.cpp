@@ -1,17 +1,18 @@
 #include <date/date.h>
 #include <date/tz.h>
+
+#include <aisaka/util/String.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/uri.hpp>
-#include <taiga/command/Commands.hpp>
-#include <taiga/command/categories/Timezone.hpp>
+#include <taiga/categories/Timezone.hpp>
 #include <taiga/util/Command.hpp>
 #include <taiga/util/String.hpp>
 
-Taiga::Categories::Timezone::Timezone(const std::string& _name)
-	: Taiga::Category(_name) {}
-
-COMMAND(set_tz) {
+static void set_tz(aegis::gateway::events::message_create& obj,
+				   Taiga::Client& client,
+				   const std::deque<std::string_view>& params,
+				   const std::string&) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;
@@ -26,11 +27,11 @@ COMMAND(set_tz) {
 		date::zoned_time<std::chrono::nanoseconds, const date::time_zone*>;
 	Time time;
 
-	std::string timezone;
+	std::string_view timezone;
 	for (const auto& tz : date::get_tzdb().zones) {
 		const auto&& tz_name = std::move(tz.name());
-		if (Taiga::Util::String::to_lower(tz_to_set) ==
-			Taiga::Util::String::to_lower(tz_name)) {
+		if (Aisaka::Util::String::to_lower(tz_to_set) ==
+			Aisaka::Util::String::to_lower(tz_name)) {
 			timezone = std::move(tz_name);
 			time = date::zoned_time{std::move(&tz),
 									std::chrono::system_clock::now()};
@@ -49,7 +50,7 @@ COMMAND(set_tz) {
                             << finalize,
                          document{}
                             << "$set" << open_document
-                                << "timezone" << timezone
+                                << "timezone" << timezone.data()
                             << close_document
                             << finalize,
                          mongocxx::options::update{}.upsert(true));
@@ -57,10 +58,12 @@ COMMAND(set_tz) {
 	obj.channel.create_message(
 		fmt::format("Your timezone is now set to "
 					"{}.\nYour time is: {}.",
-					timezone, date::format("%F %H:%M", time)));
+					timezone.data(), date::format("%F %H:%M", time)));
 }
 
-COMMAND(tz) {
+static void tz(aegis::gateway::events::message_create& obj,
+			   Taiga::Client& client,
+			   const std::deque<std::string_view>& params, const std::string&) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;
@@ -75,7 +78,7 @@ COMMAND(tz) {
 	std::string member_name{};
 	auto id = !find_user ? obj.msg.author.id.get() : 0;
 
-	const auto user_to_find = Taiga::Util::String::join(params, " ");
+	const auto user_to_find = Aisaka::Util::String::join(params, " ");
 
 	if (find_user) {
 		const auto& _member =
@@ -172,12 +175,13 @@ COMMAND(tz) {
 	obj.channel.create_message(std::move(output));
 }
 
-void Taiga::Categories::Timezone::init(spdlog::logger& log) {
-	using Metadata = Taiga::Commands::Metadata;
-	using Command = Taiga::Commands::Command;
-	using Parameter = Taiga::Commands::Parameter;
+void Taiga::Categories::Timezone::init(
+	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
+	using Command = Aisaka::Command<Taiga::Client>;
+	using Metadata = Aisaka::Metadata;
+	using Parameter = Aisaka::Parameter;
 
-	Taiga::Commands::add_command(  //
+	commands.add_command(  //
 		Command("settz")
 			.aliases({"set_tz", "mytimeis"})
 			.category(*this)
@@ -185,7 +189,7 @@ void Taiga::Categories::Timezone::init(spdlog::logger& log) {
 			.params({Parameter("timezone")})
 			.function(set_tz),
 		log);
-	Taiga::Commands::add_command(
+	commands.add_command(
 		Command("tz")
 			.aliases({"time", "timefor"})
 			.category(*this)
