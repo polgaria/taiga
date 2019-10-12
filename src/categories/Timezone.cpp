@@ -58,7 +58,7 @@ static void set_tz(aegis::gateway::events::message_create& obj,
 	obj.channel.create_message(
 		fmt::format("Your timezone is now set to "
 					"{}.\nYour time is: {}.",
-					timezone.data(), date::format("%F %H:%M", time)));
+					timezone, date::format("%F %H:%M", time)));
 }
 
 static void tz(aegis::gateway::events::message_create& obj,
@@ -116,10 +116,9 @@ static void tz(aegis::gateway::events::message_create& obj,
 		op_result = timezones.find_one(
 			document{} << "id" << obj.msg.get_author_id().get() << finalize);
 		if (op_result) {
-			auto author_timezone =
-				op_result->view()["timezone"].get_utf8().value.to_string();
 			auto author_time = date::zoned_time{
-				std::move(author_timezone), std::chrono::system_clock::now()};
+				op_result->view()["timezone"].get_utf8().value.to_string(),
+				std::chrono::system_clock::now()};
 			// if not done, the time difference can end up being 00:59 and
 			// not an hour
 			time = date::zoned_time{timezone, std::chrono::system_clock::now()};
