@@ -1,8 +1,7 @@
 #define ASIO_NO_DEPRECATED
 #define HAS_UNCAUGHT_EXCEPTIONS 1
 
-#include <aegis/core.hpp>
-#include <aegis/gateway/events/message_create.hpp>
+#include <aegis.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/pool.hpp>
 #include <taiga/Client.hpp>

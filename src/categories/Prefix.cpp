@@ -1,8 +1,5 @@
 #include <date/date.h>
 
-#include <aegis/channel.hpp>
-#include <aegis/guild.hpp>
-#include <aegis/user.hpp>
 #include <aisaka/util/String.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/client.hpp>

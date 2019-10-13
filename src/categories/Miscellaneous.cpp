@@ -1,5 +1,3 @@
-#include <aegis/channel.hpp>
-#include <aegis/gateway/events/message_create.hpp>
 #include <aisaka/util/String.hpp>
 #include <taiga/Client.hpp>
 #include <taiga/categories/Miscellaneous.hpp>

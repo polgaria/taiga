@@ -1,4 +1,4 @@
-find_path(fifo_map_INCLUDE_DIR NAMES "fifo_map.hpp" PATHS "${CMAKE_CURRENT_SOURCE_DIR}/lib/fifo_map/src")
+find_path(fifo_map_INCLUDE_DIR NAMES "fifo_map.hpp" PATHS "${aisaka_SOURCE_DIR}/lib/fifo_map/src")
 if(fifo_map_INCLUDE_DIR STREQUAL "fifo_map_INCLUDE_DIR-NOTFOUND")
 	message(FATAL_ERROR "Could not find nlohmann/fifo_map.")
 	set(fifo_map_FOUND FALSE)

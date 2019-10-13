@@ -34,17 +34,16 @@ target_include_directories(taiga PUBLIC
 	${aisaka_INCLUDE_DIRS}
 	${CPR_INCLUDE_DIRS}
 	${LIBMONGOCXX_INCLUDE_DIRS}
-	${Aegis_INCLUDE_DIRS}
 )
 
 target_link_libraries(taiga PUBLIC
 	date
 	tz
-	fifo_map
 	aisaka::aisaka
+	${Aegis_LIBRARIES}	
 	${CPR_LIBRARIES}
+	${fifo_map_LIBRARIES}
 	${LIBMONGOCXX_LIBRARIES}
-	${Aegis_LIBRARIES}
 )
 
 target_link_libraries(taiga INTERFACE fifo_map)
