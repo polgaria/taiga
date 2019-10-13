@@ -7,4 +7,3 @@
 [submodule "lib/aisaka"]
 	path = lib/aisaka
 	url = https://github.com/polgaria/aisaka.git
-	branch = aegis-submodule
