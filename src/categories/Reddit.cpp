@@ -1,5 +1,3 @@
-#include <aegis/channel.hpp>
-#include <aegis/gateway/events/message_create.hpp>
 #include <taiga/categories/Reddit.hpp>
 #include <taiga/util/Various.hpp>
 
