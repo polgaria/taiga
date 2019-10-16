@@ -15,11 +15,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 add_subdirectory(lib/aisaka)
-
-find_package(libmongocxx REQUIRED)
-find_package(libbsoncxx  REQUIRED)
-find_package(fifo_map	 REQUIRED)
-
 add_subdirectory(lib/date)
 add_subdirectory(lib/cpr)
 

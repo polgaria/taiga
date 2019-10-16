@@ -40,7 +40,6 @@ target_link_libraries(taiga PUBLIC
 	date
 	tz
 	${aegis_LIBRARIES}
-	#Aegis::aegis
 	${CPR_LIBRARIES}
 	${LIBMONGOCXX_LIBRARIES}
 )
