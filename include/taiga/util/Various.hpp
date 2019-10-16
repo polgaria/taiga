@@ -1,7 +1,5 @@
 #pragma once
 
-#include <spdlog/fmt/bundled/format.h>
-
 #include <aegis.hpp>
 #include <optional>
 

@@ -1,0 +1,27 @@
+sudo: required
+dist: bionic
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      env: CXX_STANDARD=17 BUILD_TYPE=Release MONGOC_VER=1.15.1
+      addons:
+        apt:
+          packages: libcrypto++-dev libssl-dev libsasl2-dev
+    - os: linux
+      compiler: gcc
+      env: CXX_STANDARD=17 BUILD_TYPE=Debug MONGOC_VER=1.15.1
+      addons:
+        apt:
+          packages: libcrypto++-dev libssl-dev libsasl2-dev
+
+before_install:
+  - ./.travis/install-mongoc.sh
+  - ./.travis/install-mongocxx.sh
+
+script:
+  - mkdir -p build && cd build
+  - cmake -DCXX_STANDARD=${CXX_STANDARD} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_CPR_TESTS=false ..
+  - make
