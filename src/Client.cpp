@@ -1,6 +1,3 @@
-#include <aegis/channel.hpp>
-#include <aegis/guild.hpp>
-#include <aegis/user.hpp>
 #include <aisaka/util/String.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/client.hpp>
@@ -83,9 +80,9 @@ void Taiga::Client::message_create(aegis::gateway::events::message_create obj) {
 			for (const auto& res :
 				 op_result->view()["prefix"].get_array().value) {
 				const auto& _prefix = res.get_utf8().value.to_string();
+				this->prefix_cache.emplace(guild_id, _prefix);
 				if (!content.compare(0, _prefix.length(), _prefix)) {
-					prefix = _prefix;
-					this->prefix_cache.emplace(guild_id, std::move(_prefix));
+					prefix = std::move(_prefix);
 					break;
 				}
 			}

@@ -4,9 +4,6 @@
 [submodule "cpr"]
 	path = lib/cpr
 	url = https://github.com/whoshuu/cpr.git
-[submodule "fifo_map"]
-	path = lib/fifo_map
-	url = https://github.com/nlohmann/fifo_map.git
 [submodule "lib/aisaka"]
 	path = lib/aisaka
 	url = https://github.com/polgaria/aisaka.git

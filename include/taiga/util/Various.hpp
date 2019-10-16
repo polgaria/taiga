@@ -1,8 +1,6 @@
 #pragma once
 
-#include <spdlog/fmt/bundled/format.h>
-#include <aegis/gateway/objects/embed.hpp>
-#include <aegis/rest/rest_controller.hpp>
+#include <aegis.hpp>
 #include <optional>
 
 namespace Taiga::Util {

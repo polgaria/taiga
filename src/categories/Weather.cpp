@@ -1,7 +1,5 @@
 #include <cpr/cpr.h>
 
-#include <aegis/channel.hpp>
-#include <aegis/gateway/events/message_create.hpp>
 #include <aisaka/util/String.hpp>
 #include <taiga/Client.hpp>
 #include <taiga/categories/Weather.hpp>
