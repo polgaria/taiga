@@ -6,4 +6,4 @@ tar xzf mongo-c-driver-${MONGOC_VER}.tar.gz
 
 cd mongo-c-driver-${MONGOC_VER} && cd build
 cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
-sudo make install
+make -j $(nproc) && sudo make install
