@@ -20,12 +20,13 @@ matrix:
           packages: libcrypto++-dev libssl-dev libsasl2-dev
 
 before_install:
+  - mkdir -p ~/ccache
   - ./.travis/install-mongoc.sh
   - ./.travis/install-mongocxx.sh
 
 script:
   - mkdir -p build && cd build
   - cmake -DCXX_STANDARD=${CXX_STANDARD} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_CPR_TESTS=false ..
-  - make -j $(nproc)
+  - sudo make -j$(nproc)
   
   - ccache -s

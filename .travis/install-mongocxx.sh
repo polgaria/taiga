@@ -6,5 +6,5 @@ git clone https://github.com/mongodb/mongo-cxx-driver.git \
 cd mongo-cxx-driver/build
 
 cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-sudo make EP_mnmlstc_core -j $(nproc)
-make -j $(nproc) && sudo make install
+
+sudo make install -j$(nproc)
