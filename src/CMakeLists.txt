@@ -44,8 +44,6 @@ target_link_libraries(taiga PUBLIC
 	${LIBMONGOCXX_LIBRARIES}
 )
 
-target_link_libraries(taiga INTERFACE fifo_map)
-
 target_compile_definitions(taiga PUBLIC
 	${LIBMONGOCXX_DEFINITIONS}
 )
