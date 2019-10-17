@@ -26,7 +26,7 @@ before_install:
 
 script:
   - mkdir -p build && cd build
-  - cmake -DCXX_STANDARD=${CXX_STANDARD} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_CPR_TESTS=false -DUSE_SYSTEM_CURL=true ..
+  - cmake -DCXX_STANDARD=${CXX_STANDARD} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DBUILD_CPR_TESTS=false -DUSE_SYSTEM_CURL=ON ..
   - sudo make -j$(nproc)
   
   - ccache -s
