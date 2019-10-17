@@ -1,0 +1,61 @@
+cache:
+  - c:\tools\vcpkg\installed\ -> appveyor.yml
+
+os: Visual Studio 2019
+
+environment:
+  global:
+    APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  matrix:
+    - BUILD_TYPE: msvc
+
+platform: x64
+
+configuration: Release
+
+install:
+  - cd C:\Tools\vcpkg
+  - .\bootstrap-vcpkg.bat
+  - vcpkg install curl:x64-windows
+  - vcpkg install mongo-cxx-driver:x64-windows
+  - vcpkg integrate install
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - git submodule update --init --recursive
+
+before_build:
+  - mkdir %BUILD_TYPE%_build
+  - cd %BUILD_TYPE%_build
+  - ps: |
+        cmd /C 'cmake -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -G "Visual Studio 16 2019" -A x64 -DENABLE_DATE_TESTING=false -DBUILD_CPR_TESTS=false .. 2>&1 && exit 0'
+  - cd ..
+
+build_script:
+  - ps: |
+        msbuild msvc_build/taiga.sln /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
+after_build:
+  - ps: |
+        $GITDATE = $(git show -s --date=short --format='%ad') -replace "-",""
+        $GITREV = $(git show -s --format='%h')
+
+        if ($env:APPVEYOR_REPO_TAG_NAME) {
+          $RELEASE_DIST, $RELEASE_VERSION = $env:APPVEYOR_REPO_TAG_NAME.split('-')
+        } else {
+          $RELEASE_DIST = "head"
+        }
+
+        $MSVC_BUILD_ZIP = "taiga-$GITDATE-$GITREV.zip" -replace " ", ""
+
+        $env:BUILD_ZIP = $MSVC_BUILD_ZIP
+
+        mkdir $RELEASE_DIST
+        Copy-Item .\msvc_build\bin\release\* -Destination $RELEASE_DIST -Recurse
+        Copy-Item .\LICENSE -Destination $RELEASE_DIST
+
+        7z a -tzip $MSVC_BUILD_ZIP $RELEASE_DIST\*
+
+artifacts:
+  - path: $(BUILD_ZIP)
+    name: build
+    type: zip
+
