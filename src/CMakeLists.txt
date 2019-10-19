@@ -37,12 +37,12 @@ target_include_directories(taiga PUBLIC
 
 target_link_libraries(taiga PUBLIC
 	aisaka::aisaka
-	date
-	tz
+	date::tz
 	${aegis_LIBRARIES}
 	${CPR_LIBRARIES}
 	${LIBMONGOCXX_LIBRARIES}
 )
+target_link_libraries(taiga INTERFACE date::date)
 
 target_compile_definitions(taiga PUBLIC
 	${LIBMONGOCXX_DEFINITIONS}

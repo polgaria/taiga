@@ -29,8 +29,8 @@ static void money(aegis::gateway::events::message_create& obj,
 	float conversion_rate;
 	try {
 		conversion_rate = Taiga::Util::Various::conversion_rate(
-			currency_x, currency_y, client.get_config().currency_conv_api_key,
-			client.get_bot().get_rest_controller());
+			currency_x, currency_y, client.config().currency_conv_api_key,
+			client.bot().get_rest_controller());
 	} catch (const std::runtime_error& error) {
 		obj.channel.create_message(error.what());
 

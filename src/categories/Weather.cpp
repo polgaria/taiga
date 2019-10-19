@@ -9,7 +9,7 @@ static void weather(aegis::gateway::events::message_create& obj,
 					Taiga::Client& client,
 					const std::deque<std::string_view>& params,
 					const std::string&) {
-	if (!client.get_config().weather_api_key) {
+	if (!client.config().weather_api_key) {
 		obj.channel.create_message("API key not set!");
 		return;
 	}
@@ -18,7 +18,7 @@ static void weather(aegis::gateway::events::message_create& obj,
 	try {
 		obj.channel.create_message_embed(aegis::create_message_t().embed(
 			Taiga::Util::Various::get_weather_embed(
-				client.get_config().weather_api_key.value(), location)));
+				client.config().weather_api_key.value(), location)));
 	} catch (const std::runtime_error& error) {
 		obj.channel.create_message(error.what());
 		return;
