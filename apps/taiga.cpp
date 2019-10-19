@@ -20,17 +20,17 @@ int main() {
 	mongocxx::instance instance{};
 
 	Taiga::Client client{};
-	client.set_bot(bot);
+	client.bot(bot);
 
 	auto mongo_pool = mongocxx::pool{mongocxx::uri{}};
-	client.set_mongo_pool(std::move(mongo_pool));
+	client.mongo_pool(std::move(mongo_pool));
 
 	client.load_config();
 	client.load_values_from_config();
 
 	client.load_categories(*bot.log);
-	bot.set_on_message_create(std::bind(&Taiga::Client::message_create, &client,
-										std::placeholders::_1));
+	bot.set_on_message_create(std::bind(&Taiga::Client::on_message_create,
+										&client, std::placeholders::_1));
 
 	bot.run();
 	bot.yield();

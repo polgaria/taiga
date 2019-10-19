@@ -20,6 +20,12 @@ matrix:
           packages: libcrypto++-dev libssl-dev libsasl2-dev
 
 before_install:
+  - mkdir $HOME/usr
+  - export PATH="$HOME/usr/bin:$PATH"
+  - wget https://cmake.org/files/v3.15/cmake-3.15.4-Linux-x86_64.sh
+  - chmod +x cmake-3.15.4-Linux-x86_64.sh
+  - ./cmake-3.15.4-Linux-x86_64.sh --prefix=$HOME/usr --exclude-subdir --skip-license
+
   - mkdir -p ~/ccache
   - ./.travis/install-mongoc.sh
   - ./.travis/install-mongocxx.sh

@@ -14,19 +14,31 @@ class Client : public Aisaka::Client {
 	virtual ~Client() override = default;
 
 	void load_config();
-	Taiga::Config::Config& get_config() noexcept { return this->config; }
+	[[nodiscard]] Taiga::Config::Config& config() noexcept {
+		return this->_config;
+	}
+
+	[[nodiscard]] const Aisaka::Commands<Taiga::Client>& commands() const
+		noexcept {
+		return this->_commands;
+	}
+
+	[[nodiscard]] std::unordered_multimap<int64_t, std::string>&
+	prefix_cache() noexcept {
+		return this->_prefix_cache;
+	}
 
 	void load_values_from_config();
 
-	const Aisaka::Commands<Taiga::Client>& get_commands() const noexcept;
-
 	void load_categories(spdlog::logger& log);
 
-	virtual void message_create(
+	virtual void on_message_create(
 		aegis::gateway::events::message_create obj) override;
 
    private:
-	Taiga::Config::Config config;
+	Taiga::Config::Config _config;
 	Aisaka::Commands<Taiga::Client> _commands;
+
+	std::unordered_multimap<int64_t, std::string> _prefix_cache;
 };
 }  // namespace Taiga

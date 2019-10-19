@@ -13,7 +13,7 @@ static void help(aegis::gateway::events::message_create& obj,
 	using aegis::gateway::objects::field;
 	auto fields = std::vector<field>();
 
-	const auto& commands = client.get_commands().all;
+	const auto& commands = client.commands().all;
 
 	// if any parameters were passed
 	if (!params.empty()) {
@@ -28,7 +28,7 @@ static void help(aegis::gateway::events::message_create& obj,
 		}
 
 		const auto& name = Aisaka::Util::String::to_lower(params.front());
-		const auto& categories = client.get_commands().categories;
+		const auto& categories = client.commands().categories;
 
 		// try to find a command
 		// jesus christ this is ugly
@@ -53,7 +53,7 @@ static void help(aegis::gateway::events::message_create& obj,
 				auto embed{
 					aegis::gateway::objects::embed()
 						.title(fmt::format("**{}**", found_category.get_name()))
-						.color(client.get_config().color)};
+						.color(client.config().color)};
 				std::string output{};
 
 				// find commands in that category
@@ -90,7 +90,7 @@ static void help(aegis::gateway::events::message_create& obj,
 
 		auto embed{aegis::gateway::objects::embed()
 					   .title(fmt::format("**{}**", name))
-					   .color(client.get_config().color)};
+					   .color(client.config().color)};
 
 		auto syntax{fmt::format(command.params().empty() ? "`{}{}" : "`{}{} ",
 								command_prefix, name)};
@@ -152,17 +152,17 @@ static void help(aegis::gateway::events::message_create& obj,
 
 	auto embed = aegis::gateway::objects::embed()
 					 .title("**Commands**")
-					 .color(client.get_config().color);
+					 .color(client.config().color);
 	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
 	auto added = std::unordered_set<std::string_view>();
 
 	for (const auto& command : commands) {
 		// check if command is owner-only and if the user executing it is the
 		// bot's owner
-		if (client.get_config().owner_id && command.second.owner_only()) {
+		if (client.config().owner_id && command.second.owner_only()) {
 			if (obj.msg.get_user().get_id().get() !=
 				Taiga::Util::String::string_to_number<int64_t>(
-					client.get_config().owner_id.value())) {
+					client.config().owner_id.value())) {
 				// skip command if the IDs don't match
 				continue;
 			}
@@ -189,50 +189,50 @@ static void info(aegis::gateway::events::message_create& obj,
 				 Taiga::Client& client, const std::deque<std::string_view>&,
 				 const std::string&) {
 	using aegis::gateway::objects::field;
-	const auto& bot_avatar = client.get_bot().self()->get_avatar();
+	const auto& bot_avatar = client.bot().self()->get_avatar();
 
 	std::mt19937 rand(static_cast<unsigned long>(obj.msg.get_id().get()));
 
 	auto embed =
 		aegis::gateway::objects::embed()
-			.title(client.get_config().name)
+			.title(client.config().name)
 			.description(fmt::format(
 				"{}\nMemory usage: **{:.2f}MB**",
-				client.get_config().git_repo.has_value()
+				client.config().git_repo.has_value()
 					? fmt::format("[Source code]({})\n",
-								  client.get_config().git_repo.value())
+								  client.config().git_repo.value())
 					: "",
 				Taiga::Util::Math::round_to_dec_places(
 					aegis::utility::getCurrentRSS() / std::pow(1024, 2), 2)))
 			.color(rand() % 0xFFFFFF)
 			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
 				"https://cdn.discordapp.com/avatars/{}/{}.webp?size=1024",
-				client.get_bot().get_id().get(), bot_avatar)});
+				client.bot().get_id().get(), bot_avatar)});
 	embed.fields(
 		{field()
 			 .name("Members")
-			 .value(fmt::format("{}", client.get_bot().get_member_count()))
+			 .value(fmt::format("{}", client.bot().get_member_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Guilds")
-			 .value(fmt::format("{}", client.get_bot().get_guild_count()))
+			 .value(fmt::format("{}", client.bot().get_guild_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Channels")
-			 .value(fmt::format("{}", client.get_bot().get_channel_count()))
+			 .value(fmt::format("{}", client.bot().get_channel_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Uptime")
-			 .value(client.get_bot().uptime_str())
+			 .value(client.bot().uptime_str())
 			 .is_inline(true),
 		 field()
 			 .name("Miscellaneous")
 			 .value(
 				 fmt::format("I am shard **#{}** of **{}** running on **{}**",
-							 client.get_bot()
+							 client.bot()
 								 .get_shard_by_guild(obj.channel.get_guild())
 								 .get_id(),
-							 client.get_bot().shard_max_count,
+							 client.bot().shard_max_count,
 							 aegis::utility::platform::get_platform()))
 			 .is_inline(true)});
 
@@ -333,7 +333,7 @@ void Taiga::Categories::General::init(
 					obj.channel.create_message(fmt::format(
 						"https://discordapp.com/oauth2/"
 						"authorize?client_id={}&scope=bot&permissions=270400",
-						client.get_bot().get_id().get()));
+						client.bot().get_id().get()));
 				})
 			.category(*this),
 		log);

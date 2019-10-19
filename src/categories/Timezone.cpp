@@ -18,9 +18,9 @@ static void set_tz(aegis::gateway::events::message_create& obj,
 	using bsoncxx::builder::stream::finalize;
 	using bsoncxx::builder::stream::open_document;
 
-	const auto& mongo_client = client.get_mongo_pool().acquire();
+	const auto& mongo_client = client.mongo_pool().acquire();
 	const auto& tz_to_set = params.front();
-	auto db = (*mongo_client)[client.get_config().name];
+	auto db = (*mongo_client)[client.config().name];
 	auto timezones = db["timezones"];
 
 	using Time =
@@ -71,8 +71,8 @@ static void tz(aegis::gateway::events::message_create& obj,
 
 	auto find_user = !params.empty();
 
-	const auto& mongo_client = client.get_mongo_pool().acquire();
-	auto db = (*mongo_client)[client.get_config().name];
+	const auto& mongo_client = client.mongo_pool().acquire();
+	auto db = (*mongo_client)[client.config().name];
 	auto timezones = db["timezones"];
 
 	std::string member_name{};
@@ -133,7 +133,7 @@ static void tz(aegis::gateway::events::message_create& obj,
 						time_difference_string);
 				if (!_time_difference) {
 					obj.channel.create_message("Something went wrong.");
-					client.get_bot().log->error(
+					client.bot().log->error(
 						"Somehow failed to convert time difference to an "
 						"integer.");
 
@@ -148,8 +148,9 @@ static void tz(aegis::gateway::events::message_create& obj,
 				// version of fmtlib as well, resulting in having to do
 				// this..
 				output = fmt::format(
-					"{0}'s timezone is "
-					"{1}.\n{0}'s time is {2}.\nYou are {3} {4} {5} them.",
+					"{0}'s timezone is {1}.\n"
+					"Their time is {2}.\n"
+					"You are {3} {4} {5} them.",
 					member_name, timezone, date::format("%F %H:%M", time),
 					std::abs(time_difference),
 					std::abs(time_difference) != 1 ? "hours" : "hour",

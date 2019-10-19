@@ -20,6 +20,12 @@ static void remove_prefix_from_cache(
 	}
 }
 
+static void add_prefix_to_cache(
+	std::unordered_multimap<std::int64_t, std::string>& cache,
+	const int64_t& id, const std::string_view& prefix) {
+	cache.emplace(id, prefix);
+}
+
 // TODO: clean up this horrible mess
 static void prefix(aegis::gateway::events::message_create& obj,
 				   Taiga::Client& client,
@@ -39,7 +45,7 @@ static void prefix(aegis::gateway::events::message_create& obj,
 	// permissions
 	const auto& user_is_owner =
 		fmt::format("{}", obj.msg.get_user().get_id()) ==
-		client.get_config().owner_id.value_or("");
+		client.config().owner_id.value_or("");
 	const auto& mode = params.front();
 	if (!user_perms.can_manage_messages() && mode != "list" && !user_is_owner) {
 		obj.channel.create_message(
@@ -47,8 +53,8 @@ static void prefix(aegis::gateway::events::message_create& obj,
 		return;
 	}
 
-	const auto& mongo_client = client.get_mongo_pool().acquire();
-	const auto& db = (*mongo_client)[client.get_config().name];
+	const auto& mongo_client = client.mongo_pool().acquire();
+	const auto& db = (*mongo_client)[client.config().name];
 	auto prefixes = db["prefixes"];
 
 	const bsoncxx::document::view_or_value& guild_document =
@@ -73,7 +79,7 @@ static void prefix(aegis::gateway::events::message_create& obj,
 			// clang-format on
 		);
 		if (has_one_prefix) {
-			remove_prefix_from_cache(client.get_prefix_cache(),
+			remove_prefix_from_cache(client.prefix_cache(),
 									 obj.channel.get_guild_id(), prefix);
 			prefixes.delete_one(guild_document);
 			obj.channel.create_message("Reset to default prefix.");
@@ -99,14 +105,14 @@ static void prefix(aegis::gateway::events::message_create& obj,
 							<< "prefix" << open_document
 							   << "$size" << 1
 							<< close_document
-							<< "prefix" << client.get_config().prefix
+							<< "prefix" << client.config().prefix
 							<< finalize
 			// clang-format on
 		);
 
 		// remove from prefix cache as well!
 		if (delete_prefix->modified_count() > 0 || has_one_prefix_default) {
-			remove_prefix_from_cache(client.get_prefix_cache(),
+			remove_prefix_from_cache(client.prefix_cache(),
 									 obj.channel.get_guild_id(), prefix);
 		}
 
@@ -148,7 +154,7 @@ static void prefix(aegis::gateway::events::message_create& obj,
 			prefixes.update_one(guild_document,
 								document{}
 								<< "$push" << open_document
-									<< "prefix" << client.get_config().prefix
+									<< "prefix" << client.config().prefix
 								<< close_document
 								<< finalize,
 								mongocxx::options::update{}.upsert(true));
@@ -162,6 +168,10 @@ static void prefix(aegis::gateway::events::message_create& obj,
                             << close_document
                             << finalize,
 							mongocxx::options::update{}.upsert(true));
+		
+		// add to prefix cache
+		add_prefix_to_cache(client.prefix_cache(), guild.get_id(), prefix);
+
 		// clang-format on
 		obj.channel.create_message(fmt::format(
 			"`{}` has been added to the server's prefixes.", prefix));

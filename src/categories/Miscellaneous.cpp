@@ -66,7 +66,7 @@ void Taiga::Categories::Miscellaneous::init(
 			.function(
 				[](const auto& obj, auto& client, const auto&, const auto&) {
 					obj.channel.create_message("bye").then(
-						[&client](const auto&&) { client.get_bot().shutdown(); });
+						[&client](const auto&&) { client.bot().shutdown(); });
 				})
 			.category(*this),
 		log);

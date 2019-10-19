@@ -13,6 +13,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 	set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake")
 endif()
 
+set(BUILD_TZ_LIB ON CACHE INTERNAL "")
+
 add_subdirectory(lib/aisaka)
 add_subdirectory(lib/date)
 add_subdirectory(lib/cpr)
