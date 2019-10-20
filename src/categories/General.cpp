@@ -89,12 +89,12 @@ static void help(aegis::gateway::events::message_create& obj,
 
 		const auto& command = commands.at(name.data());
 
-		auto embed{aegis::gateway::objects::embed()
-					   .title(fmt::format("**{}**", name))
-					   .color(client.config().color)};
+		auto embed = aegis::gateway::objects::embed()
+						 .title(fmt::format("**{}**", name))
+						 .color(client.config().color);
 
-		auto syntax{fmt::format(command.params().empty() ? "`{}{}" : "`{}{} ",
-								command_prefix, name)};
+		auto syntax = fmt::format(command.params().empty() ? "`{}{}" : "`{}{} ",
+								  command_prefix, name);
 		for (const auto& param : command.params()) {
 			syntax +=
 				fmt::format(param.required() ? "<{}> " : "[{}] ", param.name());
@@ -194,7 +194,7 @@ static void info(aegis::gateway::events::message_create& obj,
 
 	auto embed =
 		aegis::gateway::objects::embed()
-			.title(client.config().name)
+			.title(fmt::format("{} v{}", client.config().name, TAIGA_VERSION))
 			.description(fmt::format(
 				"{}\nMemory usage: **{:.2f}MB**",
 				client.config().git_repo.has_value()
@@ -235,9 +235,9 @@ static void info(aegis::gateway::events::message_create& obj,
 							 aegis::utility::platform::get_platform()))
 			 .is_inline(true)});
 
-	auto footer = aegis::gateway::objects::footer(fmt::format(
-		"v{} | Written in C++{} using {}, aisaka v{}", TAIGA_VERSION,
-		CXX_VERSION, AEGIS_VERSION_TEXT, AISAKA_VERSION));
+	auto footer = aegis::gateway::objects::footer(
+		fmt::format("Written in C++{} using {}, aisaka v{}", CXX_VERSION,
+					AEGIS_VERSION_TEXT, AISAKA_VERSION));
 	footer.icon_url =
 		"https://cdn.discordapp.com/emojis/289276304564420608.png";
 	embed.footer(std::move(footer));
