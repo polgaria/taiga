@@ -28,7 +28,7 @@ static void add_prefix_to_cache(
 
 // TODO: clean up this horrible mess
 static void prefix(aegis::gateway::events::message_create& obj,
-				   Taiga::Client& client,
+				   Taiga::Bot& client,
 				   const std::deque<std::string_view>& params,
 				   const std::string&) {
 	using bsoncxx::builder::stream::close_document;
@@ -195,8 +195,8 @@ static void prefix(aegis::gateway::events::message_create& obj,
 }
 
 void Taiga::Categories::Prefix::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
-	using Command = Aisaka::Command<Taiga::Client>;
+	spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands) {
+	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;
 

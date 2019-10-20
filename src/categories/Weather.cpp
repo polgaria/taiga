@@ -1,12 +1,12 @@
 #include <cpr/cpr.h>
 
 #include <aisaka/util/String.hpp>
-#include <taiga/Client.hpp>
+#include <taiga/Bot.hpp>
 #include <taiga/categories/Weather.hpp>
 #include <taiga/util/Various.hpp>
 
 static void weather(aegis::gateway::events::message_create& obj,
-					Taiga::Client& client,
+					Taiga::Bot& client,
 					const std::deque<std::string_view>& params,
 					const std::string&) {
 	if (!client.config().weather_api_key) {
@@ -26,8 +26,8 @@ static void weather(aegis::gateway::events::message_create& obj,
 }
 
 void Taiga::Categories::Weather::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
-	using Command = Aisaka::Command<Taiga::Client>;
+	spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands) {
+	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;
 

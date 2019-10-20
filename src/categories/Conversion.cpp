@@ -1,10 +1,10 @@
-#include <taiga/Client.hpp>
+#include <taiga/Bot.hpp>
 #include <taiga/categories/Conversion.hpp>
 #include <taiga/util/String.hpp>
 #include <taiga/util/Various.hpp>
 
-static void money(aegis::gateway::events::message_create& obj,
-				  Taiga::Client& client,
+static void money(const aegis::gateway::events::message_create& obj,
+				  Taiga::Bot& client,
 				  const std::deque<std::string_view>& params,
 				  const std::string&) {
 	const auto currency_x = Taiga::Util::String::to_upper(params.front());
@@ -30,7 +30,7 @@ static void money(aegis::gateway::events::message_create& obj,
 	try {
 		conversion_rate = Taiga::Util::Various::conversion_rate(
 			currency_x, currency_y, client.config().currency_conv_api_key,
-			client.bot().get_rest_controller());
+			client.core().get_rest_controller());
 	} catch (const std::runtime_error& error) {
 		obj.channel.create_message(error.what());
 
@@ -43,7 +43,7 @@ static void money(aegis::gateway::events::message_create& obj,
 		"{:.2f} {} is worth {:.2f} {}", amount, currency_x, worth, currency_y));
 }
 
-static void mbps(aegis::gateway::events::message_create& obj, Taiga::Client&,
+static void mbps(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
 				 const std::deque<std::string_view>& params,
 				 const std::string&) {
 	const auto _value =
@@ -59,7 +59,7 @@ static void mbps(aegis::gateway::events::message_create& obj, Taiga::Client&,
 		fmt::format("{}Mb/s is {:.2f}Mbps", value, value * 8));
 }
 
-static void mbs(aegis::gateway::events::message_create& obj, Taiga::Client&,
+static void mbs(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
 				const std::deque<std::string_view>& params,
 				const std::string&) {
 	const auto _value =
@@ -76,8 +76,8 @@ static void mbs(aegis::gateway::events::message_create& obj, Taiga::Client&,
 }
 
 void Taiga::Categories::Conversion::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
-	using Command = Aisaka::Command<Taiga::Client>;
+	spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands) {
+	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;
 

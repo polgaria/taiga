@@ -1,13 +1,14 @@
 #pragma once
 
 #include <aisaka/command/categories/Category.hpp>
-#include <taiga/Client.hpp>
+#include <taiga/Bot.hpp>
 
 namespace Taiga::Categories {
-class Weather : Aisaka::Category<Taiga::Client> {
+class Weather : Aisaka::Category<Taiga::Bot> {
    public:
-	Weather(const std::string& name) : Aisaka::Category<Taiga::Client>(name) {}
+	explicit Weather(const std::string& name)
+		: Aisaka::Category<Taiga::Bot>(name) {}
 
-	void init(spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands);
+	void init(spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands);
 };
 }  // namespace Taiga::Categories

@@ -10,7 +10,7 @@
 #include <taiga/util/String.hpp>
 
 static void set_tz(aegis::gateway::events::message_create& obj,
-				   Taiga::Client& client,
+				   Taiga::Bot& client,
 				   const std::deque<std::string_view>& params,
 				   const std::string&) {
 	using bsoncxx::builder::stream::close_document;
@@ -62,7 +62,7 @@ static void set_tz(aegis::gateway::events::message_create& obj,
 }
 
 static void tz(aegis::gateway::events::message_create& obj,
-			   Taiga::Client& client,
+			   Taiga::Bot& client,
 			   const std::deque<std::string_view>& params, const std::string&) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
@@ -133,7 +133,7 @@ static void tz(aegis::gateway::events::message_create& obj,
 						time_difference_string);
 				if (!_time_difference) {
 					obj.channel.create_message("Something went wrong.");
-					client.bot().log->error(
+					client.core().log->error(
 						"Somehow failed to convert time difference to an "
 						"integer.");
 
@@ -176,8 +176,8 @@ static void tz(aegis::gateway::events::message_create& obj,
 }
 
 void Taiga::Categories::Timezone::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
-	using Command = Aisaka::Command<Taiga::Client>;
+	spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands) {
+	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;
 

@@ -1,24 +1,24 @@
 #pragma once
 
-#include <aisaka/Client.hpp>
+#include <aisaka/Bot.hpp>
 #include <aisaka/command/Commands.hpp>
 #include <taiga/Config.hpp>
 
 namespace Taiga {
-class Client : public Aisaka::Client {
+class Bot : public Aisaka::Bot {
    public:
-	Client() : Aisaka::Client("", "", 0) {}
-	Client(const std::string& _default_prefix, const std::string& _bot_name,
-		   const int64_t& _owner_id)
-		: Aisaka::Client(_default_prefix, _bot_name, _owner_id) {}
-	virtual ~Client() override = default;
+	Bot() : Aisaka::Bot("", "", 0) {}
+	Bot(const std::string& _default_prefix, const std::string& _bot_name,
+		const int64_t& _owner_id)
+		: Aisaka::Bot(_default_prefix, _bot_name, _owner_id) {}
+	virtual ~Bot() override = default;
 
 	void load_config();
 	[[nodiscard]] Taiga::Config::Config& config() noexcept {
 		return this->_config;
 	}
 
-	[[nodiscard]] const Aisaka::Commands<Taiga::Client>& commands() const
+	[[nodiscard]] const Aisaka::Commands<Taiga::Bot>& commands() const
 		noexcept {
 		return this->_commands;
 	}
@@ -37,7 +37,7 @@ class Client : public Aisaka::Client {
 
    private:
 	Taiga::Config::Config _config;
-	Aisaka::Commands<Taiga::Client> _commands;
+	Aisaka::Commands<Taiga::Bot> _commands;
 
 	std::unordered_multimap<int64_t, std::string> _prefix_cache;
 };
