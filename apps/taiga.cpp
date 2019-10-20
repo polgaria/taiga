@@ -11,27 +11,27 @@
 #include <aegis.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/pool.hpp>
-#include <taiga/Client.hpp>
+#include <taiga/Bot.hpp>
 #include <taiga/Config.hpp>
 
 int main() {
-	aegis::core bot(spdlog::level::trace);
+	aegis::core core(spdlog::level::trace);
 
 	mongocxx::instance instance{};
 
-	Taiga::Client client{};
-	client.bot(bot);
+	Taiga::Bot bot{};
+	bot.core(core);
 
 	auto mongo_pool = mongocxx::pool{mongocxx::uri{}};
-	client.mongo_pool(std::move(mongo_pool));
+	bot.mongo_pool(std::move(mongo_pool));
 
-	client.load_config();
-	client.load_values_from_config();
+	bot.load_config();
+	bot.load_values_from_config();
 
-	client.load_categories(*bot.log);
-	bot.set_on_message_create(std::bind(&Taiga::Client::on_message_create,
-										&client, std::placeholders::_1));
+	bot.load_categories(*core.log);
+	core.set_on_message_create(
+		std::bind(&Taiga::Bot::on_message_create, &bot, std::placeholders::_1));
 
-	bot.run();
-	bot.yield();
+	core.run();
+	core.yield();
 }

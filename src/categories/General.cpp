@@ -1,14 +1,15 @@
 #include <date/date.h>
 
+#include <aisaka/Version.hpp>
 #include <aisaka/util/String.hpp>
+#include <taiga/Version.hpp>
 #include <taiga/categories/General.hpp>
 #include <taiga/util/Command.hpp>
 #include <taiga/util/Math.hpp>
 #include <taiga/util/String.hpp>
 
 static void help(aegis::gateway::events::message_create& obj,
-				 Taiga::Client& client,
-				 const std::deque<std::string_view>& params,
+				 Taiga::Bot& client, const std::deque<std::string_view>& params,
 				 const std::string& command_prefix) {
 	using aegis::gateway::objects::field;
 	auto fields = std::vector<field>();
@@ -43,7 +44,7 @@ static void help(aegis::gateway::events::message_create& obj,
 				std::find_if(categories.begin(), categories.end(),
 							 [&name](const auto& category) {
 								 return Aisaka::Util::String::to_lower(
-											category.second.get_name()) == name;
+											category.second.name()) == name;
 							 });
 
 			// then try to find a category
@@ -52,14 +53,14 @@ static void help(aegis::gateway::events::message_create& obj,
 
 				auto embed{
 					aegis::gateway::objects::embed()
-						.title(fmt::format("**{}**", found_category.get_name()))
+						.title(fmt::format("**{}**", found_category.name()))
 						.color(client.config().color)};
 				std::string output{};
 
 				// find commands in that category
 				for (auto& command : commands) {
-					if (command.second.category().get_name() ==
-						found_category.get_name()) {
+					if (command.second.category().name() ==
+						found_category.name()) {
 						output += fmt::format(
 							!command.second.metadata().description().empty()
 								? "**{}** - {}\n"
@@ -171,7 +172,7 @@ static void help(aegis::gateway::events::message_create& obj,
 		const auto& command_name = command.second.name();
 		if (!added.count(command_name)) {
 			added.insert(command_name);
-			fields_content[command.second.category().get_name()] +=
+			fields_content[command.second.category().name()] +=
 				fmt::format("`{}` ", command_name);
 		}
 	}
@@ -186,12 +187,10 @@ static void help(aegis::gateway::events::message_create& obj,
 
 // totally not stolen from aegisbot... shh..
 static void info(aegis::gateway::events::message_create& obj,
-				 Taiga::Client& client, const std::deque<std::string_view>&,
+				 Taiga::Bot& client, const std::deque<std::string_view>&,
 				 const std::string&) {
 	using aegis::gateway::objects::field;
-	const auto& bot_avatar = client.bot().self()->get_avatar();
-
-	std::mt19937 rand(static_cast<unsigned long>(obj.msg.get_id().get()));
+	const auto& bot_avatar = client.core().self()->get_avatar();
 
 	auto embed =
 		aegis::gateway::objects::embed()
@@ -204,40 +203,41 @@ static void info(aegis::gateway::events::message_create& obj,
 					: "",
 				Taiga::Util::Math::round_to_dec_places(
 					aegis::utility::getCurrentRSS() / std::pow(1024, 2), 2)))
-			.color(rand() % 0xFFFFFF)
+			.color(client.config().color)
 			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
 				"https://cdn.discordapp.com/avatars/{}/{}.webp?size=1024",
-				client.bot().get_id().get(), bot_avatar)});
+				client.core().get_id(), bot_avatar)});
 	embed.fields(
 		{field()
 			 .name("Members")
-			 .value(fmt::format("{}", client.bot().get_member_count()))
+			 .value(fmt::format("{}", client.core().get_member_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Guilds")
-			 .value(fmt::format("{}", client.bot().get_guild_count()))
+			 .value(fmt::format("{}", client.core().get_guild_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Channels")
-			 .value(fmt::format("{}", client.bot().get_channel_count()))
+			 .value(fmt::format("{}", client.core().get_channel_count()))
 			 .is_inline(true),
 		 field()
 			 .name("Uptime")
-			 .value(client.bot().uptime_str())
+			 .value(client.core().uptime_str())
 			 .is_inline(true),
 		 field()
 			 .name("Miscellaneous")
 			 .value(
 				 fmt::format("I am shard **#{}** of **{}** running on **{}**",
-							 client.bot()
+							 client.core()
 								 .get_shard_by_guild(obj.channel.get_guild())
 								 .get_id(),
-							 client.bot().shard_max_count,
+							 client.core().shard_max_count,
 							 aegis::utility::platform::get_platform()))
 			 .is_inline(true)});
 
-	auto footer = aegis::gateway::objects::footer(
-		fmt::format("Made in C++{} using {}", CXX_VERSION, AEGIS_VERSION_TEXT));
+	auto footer = aegis::gateway::objects::footer(fmt::format(
+		"v{} | Written in C++{} using {}, aisaka v{}", TAIGA_VERSION,
+		CXX_VERSION, AEGIS_VERSION_TEXT, AISAKA_VERSION));
 	footer.icon_url =
 		"https://cdn.discordapp.com/emojis/289276304564420608.png";
 	embed.footer(std::move(footer));
@@ -245,7 +245,7 @@ static void info(aegis::gateway::events::message_create& obj,
 	obj.channel.create_message_embed(aegis::create_message_t().embed(embed));
 }
 
-static void server(aegis::gateway::events::message_create& obj, Taiga::Client&,
+static void server(aegis::gateway::events::message_create& obj, Taiga::Bot&,
 				   const std::deque<std::string_view>&, const std::string&) {
 	using aegis::gateway::objects::field;
 
@@ -288,9 +288,9 @@ static void server(aegis::gateway::events::message_create& obj, Taiga::Client&,
 	obj.channel.create_message_embed(aegis::create_message_t().embed(embed));
 }
 
-void Taiga::Categories::General::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
-	using Command = Aisaka::Command<Taiga::Client>;
+void Taiga::Categories::General::init(spdlog::logger& log,
+									  Aisaka::Commands<Taiga::Bot>& commands) {
+	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;
 
@@ -333,7 +333,7 @@ void Taiga::Categories::General::init(
 					obj.channel.create_message(fmt::format(
 						"https://discordapp.com/oauth2/"
 						"authorize?client_id={}&scope=bot&permissions=270400",
-						client.bot().get_id().get()));
+						client.core().get_id()));
 				})
 			.category(*this),
 		log);

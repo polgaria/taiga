@@ -1,7 +1,7 @@
 #include <aisaka/util/String.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 #include <mongocxx/client.hpp>
-#include <taiga/Client.hpp>
+#include <taiga/Bot.hpp>
 #include <taiga/categories/Conversion.hpp>
 #include <taiga/categories/General.hpp>
 #include <taiga/categories/Miscellaneous.hpp>
@@ -39,8 +39,7 @@
 #define INIT_CATEGORY(category) \
 	Taiga::Categories::category{#category}.init(log, this->_commands)
 
-void Taiga::Client::on_message_create(
-	aegis::gateway::events::message_create obj) {
+void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;
 
@@ -71,19 +70,18 @@ void Taiga::Client::on_message_create(
 	if (this->prefix_cache().count(guild_id) == 0) {
 		const auto& mongo_client = this->mongo_pool().acquire();
 		const auto& op_result =
-			(*mongo_client)[this->bot_name()]["prefixes"].find_one(
+			(*mongo_client)[this->name()]["prefixes"].find_one(
 				document{} << "id" << obj.msg.get_guild().get_id() << finalize);
-		if (!op_result && !content.compare(0, this->default_prefix().size(),
-										   this->default_prefix())) {
+		if (!op_result) {
 			prefix = this->default_prefix();
 			this->prefix_cache().emplace(guild_id, prefix);
-		} else if (op_result) {
+		} else {
 			for (const auto& res :
 				 op_result->view()["prefix"].get_array().value) {
-				const auto& _prefix = res.get_utf8().value.to_string();
+				const auto& _prefix = res.get_utf8().value;
 				this->prefix_cache().emplace(guild_id, _prefix);
-				if (!content.compare(0, _prefix.length(), _prefix)) {
-					prefix = std::move(_prefix);
+				if (!content.compare(0, _prefix.length(), _prefix.data())) {
+					prefix = std::move(_prefix.data());
 					break;
 				}
 			}
@@ -128,12 +126,10 @@ void Taiga::Client::on_message_create(
 		}
 
 		// check how many parameters are required
-		unsigned short required_params = 0;
-		for (const auto& param : found_command.params()) {
-			if (param.required()) {
-				required_params++;
-			}
-		}
+		unsigned short required_params =
+			static_cast<unsigned short>(std::count_if(
+				found_command.params().begin(), found_command.params().end(),
+				[](const auto& param) { return param.required(); }));
 		if (params.size() < required_params) {
 			obj.channel.create_message("Too few parameters.");
 			return;
@@ -144,7 +140,7 @@ void Taiga::Client::on_message_create(
 	}
 }
 
-void Taiga::Client::load_config() {
+void Taiga::Bot::load_config() {
 	std::ifstream config_file("config.json");
 
 	if (config_file.fail()) {
@@ -168,8 +164,8 @@ void Taiga::Client::load_config() {
 	this->config() = conf;
 }
 
-void Taiga::Client::load_values_from_config() {
-	this->bot_name() = this->config().name;
+void Taiga::Bot::load_values_from_config() {
+	this->name() = this->config().name;
 	this->default_prefix() = this->config().prefix;
 	if (this->config().owner_id) {
 		this->owner_id() = Taiga::Util::String::string_to_number<int64_t>(
@@ -178,7 +174,7 @@ void Taiga::Client::load_values_from_config() {
 	}
 }
 
-void Taiga::Client::load_categories(spdlog::logger& log) {
+void Taiga::Bot::load_categories(spdlog::logger& log) {
 	INIT_CATEGORY(General);
 	INIT_CATEGORY(Prefix);
 	INIT_CATEGORY(Reddit);

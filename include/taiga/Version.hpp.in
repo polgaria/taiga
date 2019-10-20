@@ -1,0 +1,6 @@
+#pragma once
+
+#define TAIGA_VERSION "@taiga_VERSION@"
+#define TAIGA_VERSION_MAJOR "@taiga_VERSION_MAJOR@"
+#define TAIGA_VERSION_MINOR "@taiga_VERSION_MINOR@"
+#define TAIGA_VERSION_PATCH "@taiga_VERSION_PATCH@"

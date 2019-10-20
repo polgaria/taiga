@@ -1,9 +1,9 @@
 #include <aisaka/util/String.hpp>
-#include <taiga/Client.hpp>
+#include <taiga/Bot.hpp>
 #include <taiga/categories/Miscellaneous.hpp>
 #include <taiga/util/Various.hpp>
 
-static void rate(aegis::gateway::events::message_create& obj, Taiga::Client&,
+static void rate(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
 				 const std::deque<std::string_view>& params,
 				 const std::string&) {
 	const auto ratee = Aisaka::Util::String::join(params, " ");
@@ -11,27 +11,33 @@ static void rate(aegis::gateway::events::message_create& obj, Taiga::Client&,
 	const auto hash = std::hash<std::string_view>();
 	std::mt19937 rand(hash(ratee));
 
+	std::random_device rd;
+	std::mt19937 guy(rd());
+	std::cout << static_cast<wchar_t>(std::uniform_real_distribution<>{
+		0, std::numeric_limits<double>::max()}(rand));
+
 	obj.channel.create_message(
 		fmt::format("I'd rate {} a {}/10", ratee,
 					std::uniform_int_distribution<>{0, 10}(rand)));
 }
 
-static void progress(aegis::gateway::events::message_create& obj,
-					 Taiga::Client&, const std::deque<std::string_view>&,
-					 const std::string&) {
-	auto percent = Taiga::Util::Various::year_progress();
+static void _progress(const aegis::gateway::events::message_create& obj,
+					  Taiga::Bot&, const std::deque<std::string_view>&,
+					  const std::string&) {
+	auto [percent, days_left] = Taiga::Util::Various::year_progress();
 	std::string msg;
 
-	for (auto progress = 0; progress < 20; progress++) {
+	for (uint8_t progress = 0; progress < 20; progress++) {
 		msg += progress < percent / 5 ? "▓" : "░";
 	}
 
-	obj.channel.create_message(fmt::format("{} {:.2f}%", msg, percent));
+	obj.channel.create_message(
+		fmt::format("{} {:.2f}%, {} days left", msg, percent, days_left));
 }
 
 void Taiga::Categories::Miscellaneous::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Client>& commands) {
-	using Command = Aisaka::Command<Taiga::Client>;
+	spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands) {
+	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;
 
@@ -47,7 +53,7 @@ void Taiga::Categories::Miscellaneous::init(
 		Command("progress")
 			.metadata(
 				Metadata().description("Progress to the end of the year."))
-			.function(progress)
+			.function(_progress)
 			.category(*this),
 		log);
 	// clang-format off
@@ -66,7 +72,7 @@ void Taiga::Categories::Miscellaneous::init(
 			.function(
 				[](const auto& obj, auto& client, const auto&, const auto&) {
 					obj.channel.create_message("bye").then(
-						[&client](const auto&&) { client.bot().shutdown(); });
+						[&client](const auto&&) { client.core().shutdown(); });
 				})
 			.category(*this),
 		log);

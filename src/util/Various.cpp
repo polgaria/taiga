@@ -28,7 +28,7 @@ std::string Taiga::Util::Various::get_random_reddit_post_url(
 		.get<std::string>();
 }
 
-float Taiga::Util::Various::year_progress() {
+std::pair<float, unsigned short> Taiga::Util::Various::year_progress() {
 	const auto& now = std::chrono::system_clock::now();
 
 	const auto& current_date =
@@ -37,15 +37,16 @@ float Taiga::Util::Various::year_progress() {
 
 	const auto& next_date = date::year_month_day{
 		date::January / 1 / current_date.year() + date::years{1}};
-	const auto& days_until_next_year =
-		(date::sys_days(next_date) - date::sys_days(current_date)).count();
+	const unsigned short& days_until_next_year = static_cast<unsigned short>(
+		(date::sys_days(next_date) - date::sys_days(current_date)).count());
 
 	auto nonrounded_percent =
-		100.f - (static_cast<float>(std::move(days_until_next_year)) /
+		100.f - (static_cast<float>(days_until_next_year) /
 				 std::move(days_in_year) * 100);
 
-	return Taiga::Util::Math::round_to_dec_places(std::move(nonrounded_percent),
-												  2);
+	return std::make_pair(Taiga::Util::Math::round_to_dec_places(
+							  std::move(nonrounded_percent), 2),
+						  days_until_next_year);
 }
 
 float Taiga::Util::Various::conversion_rate(
