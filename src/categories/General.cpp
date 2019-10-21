@@ -196,13 +196,12 @@ static void info(aegis::gateway::events::message_create& obj,
 		aegis::gateway::objects::embed()
 			.title(fmt::format("{} v{}", client.config().name, TAIGA_VERSION))
 			.description(fmt::format(
-				"{}\nMemory usage: **{:.2f}MB**",
+				"{}\nMemory usage: **{}**",
 				client.config().git_repo.has_value()
 					? fmt::format("[Source code]({})\n",
 								  client.config().git_repo.value())
 					: "",
-				Taiga::Util::Math::round_to_dec_places(
-					aegis::utility::getCurrentRSS() / std::pow(1024, 2), 2)))
+				aegis::utility::format_bytes(aegis::utility::getCurrentRSS())))
 			.color(client.config().color)
 			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
 				"https://cdn.discordapp.com/avatars/{}/{}.webp?size=1024",
