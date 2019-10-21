@@ -185,8 +185,7 @@ static void prefix(aegis::gateway::events::message_create& obj,
 		// iterate through guild prefixes
 		for (const auto& res :
 			 guild_prefixes->view()["prefix"].get_array().value) {
-			const auto& _prefix = std::string{res.get_utf8().value};
-			output += fmt::format("`{}`\n", _prefix);
+			output += fmt::format("`{}`\n", res.get_utf8().value.to_string());
 		}
 		obj.channel.create_message(output);
 	} else {
@@ -194,8 +193,8 @@ static void prefix(aegis::gateway::events::message_create& obj,
 	}
 }
 
-void Taiga::Categories::Prefix::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands) {
+void Taiga::Categories::Prefix::init(spdlog::logger& log,
+									 Aisaka::Commands<Taiga::Bot>& commands) {
 	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;

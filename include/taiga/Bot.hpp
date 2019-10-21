@@ -14,16 +14,16 @@ class Bot : public Aisaka::Bot {
 	virtual ~Bot() override = default;
 
 	void load_config();
-	[[nodiscard]] Taiga::Config::Config& config() noexcept {
+	[[nodiscard]] inline Taiga::Config::Config& config() noexcept {
 		return this->_config;
 	}
 
-	[[nodiscard]] const Aisaka::Commands<Taiga::Bot>& commands() const
+	[[nodiscard]] const inline Aisaka::Commands<Taiga::Bot>& commands() const
 		noexcept {
 		return this->_commands;
 	}
 
-	[[nodiscard]] std::unordered_multimap<int64_t, std::string>&
+	[[nodiscard]] inline std::unordered_multimap<int64_t, std::string>&
 	prefix_cache() noexcept {
 		return this->_prefix_cache;
 	}
