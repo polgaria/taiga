@@ -6,9 +6,10 @@
 namespace Taiga::Categories {
 class Prefix : public Aisaka::Category<Taiga::Bot> {
    public:
-	explicit Prefix(const std::string& name)
+	explicit Prefix(const std::string_view name)
 		: Aisaka::Category<Taiga::Bot>(name) {}
 
-	void init(spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands);
+	void init(spdlog::logger& log,
+			  Aisaka::Commands<Taiga::Bot>& commands) override;
 };
 }  // namespace Taiga::Categories

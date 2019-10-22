@@ -15,23 +15,13 @@
 #include <taiga/Config.hpp>
 
 int main() {
-	aegis::core core(spdlog::level::trace);
-
-	mongocxx::instance instance{};
-
-	Taiga::Bot bot{};
-	bot.core(core);
-
-	auto mongo_pool = mongocxx::pool{mongocxx::uri{}};
-	bot.mongo_pool(std::move(mongo_pool));
+	Taiga::Bot bot;
 
 	bot.load_config();
 	bot.load_values_from_config();
 
-	bot.load_categories(*core.log);
-	core.set_on_message_create(
-		std::bind(&Taiga::Bot::on_message_create, &bot, std::placeholders::_1));
+	bot.load_categories();
 
-	core.run();
-	core.yield();
+	bot.core().run();
+	bot.core().yield();
 }

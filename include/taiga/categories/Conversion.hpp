@@ -4,11 +4,12 @@
 #include <taiga/Bot.hpp>
 
 namespace Taiga::Categories {
-class Conversion : Aisaka::Category<Taiga::Bot> {
+class Conversion : public Aisaka::Category<Taiga::Bot> {
    public:
-	explicit Conversion(const std::string& name)
+	explicit Conversion(const std::string_view name)
 		: Aisaka::Category<Taiga::Bot>(name) {}
 
-	void init(spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands);
+	void init(spdlog::logger& log,
+			  Aisaka::Commands<Taiga::Bot>& commands) override;
 };
 }  // namespace Taiga::Categories

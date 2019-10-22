@@ -7,7 +7,7 @@
 
 static void weather(aegis::gateway::events::message_create& obj,
 					Taiga::Bot& client,
-					const std::deque<std::string_view>& params,
+					const std::deque<std::string>& params,
 					const std::string&) {
 	if (!client.config().weather_api_key) {
 		obj.channel.create_message("API key not set!");

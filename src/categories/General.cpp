@@ -9,7 +9,7 @@
 #include <taiga/util/String.hpp>
 
 static void help(aegis::gateway::events::message_create& obj,
-				 Taiga::Bot& client, const std::deque<std::string_view>& params,
+				 Taiga::Bot& client, const std::deque<std::string>& params,
 				 const std::string& command_prefix) {
 	using aegis::gateway::objects::field;
 	auto fields = std::vector<field>();
@@ -18,7 +18,7 @@ static void help(aegis::gateway::events::message_create& obj,
 
 	// if any parameters were passed
 	if (!params.empty()) {
-		std::string type;
+		std::string_view type;
 		if (params.size() > 1) {
 			type = Aisaka::Util::String::to_lower(params[1]);
 		}
@@ -55,7 +55,7 @@ static void help(aegis::gateway::events::message_create& obj,
 					aegis::gateway::objects::embed()
 						.title(fmt::format("**{}**", found_category.name()))
 						.color(client.config().color)};
-				std::string output{};
+				std::string output;
 
 				// find commands in that category
 				for (auto& command : commands) {
@@ -187,7 +187,7 @@ static void help(aegis::gateway::events::message_create& obj,
 
 // totally not stolen from aegisbot... shh..
 static void info(aegis::gateway::events::message_create& obj,
-				 Taiga::Bot& client, const std::deque<std::string_view>&,
+				 Taiga::Bot& client, const std::deque<std::string>&,
 				 const std::string&) {
 	using aegis::gateway::objects::field;
 	const auto& bot_avatar = client.core().self()->get_avatar();
@@ -245,7 +245,7 @@ static void info(aegis::gateway::events::message_create& obj,
 }
 
 static void server(aegis::gateway::events::message_create& obj, Taiga::Bot&,
-				   const std::deque<std::string_view>&, const std::string&) {
+				   const std::deque<std::string>&, const std::string&) {
 	using aegis::gateway::objects::field;
 
 	const auto& guild = obj.msg.get_guild();
