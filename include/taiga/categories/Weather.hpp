@@ -4,11 +4,12 @@
 #include <taiga/Bot.hpp>
 
 namespace Taiga::Categories {
-class Weather : Aisaka::Category<Taiga::Bot> {
+class Weather : public Aisaka::Category<Taiga::Bot> {
    public:
-	explicit Weather(const std::string& name)
+	explicit Weather(const std::string_view name)
 		: Aisaka::Category<Taiga::Bot>(name) {}
 
-	void init(spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands);
+	void init(spdlog::logger& log,
+			  Aisaka::Commands<Taiga::Bot>& commands) override;
 };
 }  // namespace Taiga::Categories

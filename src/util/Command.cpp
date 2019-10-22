@@ -3,7 +3,7 @@
 #include <taiga/util/String.hpp>
 
 std::optional<std::reference_wrapper<aegis::user>>
-Taiga::Util::Command::find_user(const std::string& name,
+Taiga::Util::Command::find_user(const std::string_view name,
 								const aegis::gateway::objects::message& msg,
 								Taiga::Bot& client) {
 	// in case a user is mentioned

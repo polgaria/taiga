@@ -11,7 +11,7 @@
 
 static void set_tz(aegis::gateway::events::message_create& obj,
 				   Taiga::Bot& client,
-				   const std::deque<std::string_view>& params,
+				   const std::deque<std::string>& params,
 				   const std::string&) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
@@ -63,7 +63,7 @@ static void set_tz(aegis::gateway::events::message_create& obj,
 
 static void tz(aegis::gateway::events::message_create& obj,
 			   Taiga::Bot& client,
-			   const std::deque<std::string_view>& params, const std::string&) {
+			   const std::deque<std::string>& params, const std::string&) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;

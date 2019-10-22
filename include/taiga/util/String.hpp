@@ -9,7 +9,7 @@ class String {
 	template <typename T, typename = typename std::enable_if<
 							  std::is_arithmetic<T>::value, T>::type>
 	static std::optional<T> string_to_number(
-		const std::string_view& number_as_string) {
+		const std::string_view number_as_string) {
 		T number;
 
 		std::stringstream stream(number_as_string.data());
@@ -23,7 +23,7 @@ class String {
 
 	template <typename T, typename = typename std::enable_if<
 							  std::is_arithmetic<T>::value, T>::type>
-	static std::optional<T> string_to_hex(const std::string_view& source) {
+	static std::optional<T> string_to_hex(const std::string_view source) {
 		T hex;
 		std::stringstream stream;
 		stream << std::hex << source;
@@ -35,6 +35,6 @@ class String {
 		return hex;
 	}
 
-	static std::string to_upper(const std::string_view&);
+	static std::string to_upper(const std::string_view);
 };
 }  // namespace Taiga::Util

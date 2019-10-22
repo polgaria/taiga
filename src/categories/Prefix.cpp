@@ -29,7 +29,7 @@ static void add_prefix_to_cache(
 // TODO: clean up this horrible mess
 static void prefix(aegis::gateway::events::message_create& obj,
 				   Taiga::Bot& client,
-				   const std::deque<std::string_view>& params,
+				   const std::deque<std::string>& params,
 				   const std::string&) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;

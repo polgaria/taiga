@@ -4,11 +4,12 @@
 #include <taiga/Bot.hpp>
 
 namespace Taiga::Categories {
-class Timezone : Aisaka::Category<Taiga::Bot> {
+class Timezone : public Aisaka::Category<Taiga::Bot> {
    public:
-	explicit Timezone(const std::string& name)
+	explicit Timezone(const std::string_view name)
 		: Aisaka::Category<Taiga::Bot>(name) {}
 
-	void init(spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands);
+	void init(spdlog::logger& log,
+			  Aisaka::Commands<Taiga::Bot>& commands) override;
 };
 }  // namespace Taiga::Categories

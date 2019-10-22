@@ -36,8 +36,9 @@
 		conf.name = _or;                                       \
 	}
 
-#define INIT_CATEGORY(category) \
-	Taiga::Categories::category{#category}.init(log, this->_commands)
+#define INIT_CATEGORY(category)                                    \
+	Taiga::Categories::category{#category}.init(*this->core().log, \
+												this->_commands)
 
 void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 	using bsoncxx::builder::stream::document;
@@ -170,11 +171,11 @@ void Taiga::Bot::load_values_from_config() {
 	if (this->config().owner_id) {
 		this->owner_id() = Taiga::Util::String::string_to_number<int64_t>(
 							   this->config().owner_id.value())
-							   .value_or(0);
+							   .value_or(-1);
 	}
 }
 
-void Taiga::Bot::load_categories(spdlog::logger& log) {
+void Taiga::Bot::load_categories() {
 	INIT_CATEGORY(General);
 	INIT_CATEGORY(Prefix);
 	INIT_CATEGORY(Reddit);

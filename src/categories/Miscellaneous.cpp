@@ -4,7 +4,7 @@
 #include <taiga/util/Various.hpp>
 
 static void rate(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
-				 const std::deque<std::string_view>& params,
+				 const std::deque<std::string>& params,
 				 const std::string&) {
 	const auto ratee = Aisaka::Util::String::join(params, " ");
 
@@ -22,7 +22,7 @@ static void rate(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
 }
 
 static void _progress(const aegis::gateway::events::message_create& obj,
-					  Taiga::Bot&, const std::deque<std::string_view>&,
+					  Taiga::Bot&, const std::deque<std::string>&,
 					  const std::string&) {
 	auto [percent, days_left] = Taiga::Util::Various::year_progress();
 	std::string msg;

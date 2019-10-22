@@ -6,9 +6,10 @@
 namespace Taiga::Categories {
 class Reddit : public Aisaka::Category<Taiga::Bot> {
    public:
-	explicit Reddit(const std::string& name)
+	explicit Reddit(const std::string_view name)
 		: Aisaka::Category<Taiga::Bot>(name) {}
 
-	void init(spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands);
+	void init(spdlog::logger& log,
+			  Aisaka::Commands<Taiga::Bot>& commands) override;
 };
 }  // namespace Taiga::Categories

@@ -8,7 +8,7 @@
 #include <taiga/util/Various.hpp>
 
 std::string Taiga::Util::Various::get_random_reddit_post_url(
-	const std::string& subreddit) {
+	const std::string_view subreddit) {
 	auto post_json_string =
 		// why not aegis::rest::rest_controller? it can't handle
 		// redirects; therefore, cpr it is (as much as i don't want to use it)
@@ -50,7 +50,7 @@ std::pair<float, unsigned short> Taiga::Util::Various::year_progress() {
 }
 
 float Taiga::Util::Various::conversion_rate(
-	const std::string& from, const std::string& to,
+	const std::string_view from, const std::string_view to,
 	const std::optional<std::string>& api_key,
 	aegis::rest::rest_controller& rc) {
 	if (!api_key.has_value()) {
@@ -99,7 +99,7 @@ float Taiga::Util::Various::conversion_rate(
 }
 
 aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
-	const std::string& api_key, const std::string& location) {
+	const std::string_view api_key, const std::string_view location) {
 	using aegis::gateway::objects::field;
 	using aegis::gateway::objects::footer;
 	const auto request =
@@ -180,7 +180,7 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 				.value(fmt::format("{}mm", std::move(precipation))));
 	}
 
-	embed.fields(fields);
+	embed.fields(std::move(fields));
 
 	auto thumbnail = aegis::gateway::objects::thumbnail();
 	thumbnail.url = json["current"]["weather_icons"]
