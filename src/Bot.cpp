@@ -51,7 +51,7 @@ void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 
 	std::string_view content = obj.msg.get_content();
 	const auto& guild_id = obj.channel.get_guild_id();
-	std::string_view prefix;
+	std::string prefix;
 
 	// try to find an existing custom prefix
 	if (this->prefix_cache().count(guild_id) > 0) {
@@ -79,10 +79,10 @@ void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 		} else {
 			for (const auto& res :
 				 op_result->view()["prefix"].get_array().value) {
-				const auto& _prefix = res.get_utf8().value;
+				const auto& _prefix = res.get_utf8().value.to_string();
 				this->prefix_cache().emplace(guild_id, _prefix);
-				if (!content.compare(0, _prefix.length(), _prefix.data())) {
-					prefix = std::move(_prefix.data());
+				if (!content.compare(0, _prefix.length(), _prefix)) {
+					prefix = std::move(_prefix);
 					break;
 				}
 			}
@@ -137,7 +137,7 @@ void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 		}
 
 		// call command
-		found_command.function()(obj, *this, params, prefix.data());
+		found_command.function()(obj, *this, params, prefix);
 	}
 }
 
