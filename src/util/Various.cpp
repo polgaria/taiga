@@ -47,17 +47,26 @@ std::pair<float, unsigned short> Taiga::Util::Various::year_progress() {
 						  days_until_next_year);
 }
 
-unsigned short Taiga::Util::Various::minecraft_age() {
+std::tuple<unsigned short, float, float> Taiga::Util::Various::minecraft_age() {
 	const auto& now = std::chrono::system_clock::now();
 	const date::year_month_day& mc_release_date = date::May / 17 / 2009;
 
 	const date::year_month_day& current_date = date::floor<date::days>(now);
 
-	const unsigned short days_since_mc_release = static_cast<unsigned short>(
-		(date::sys_days(current_date) - date::sys_days(mc_release_date))
-			.count());
+	const auto sd_since_mc_release =
+		date::sys_days(current_date) - date::sys_days(mc_release_date);
 
-	return days_since_mc_release;
+	const auto days_since_mc_release =
+		static_cast<unsigned short>(sd_since_mc_release.count());
+	const auto months_since_mc_release =
+		std::chrono::duration<float, date::months::period>(sd_since_mc_release)
+			.count();
+	const auto years_since_mc_release =
+		std::chrono::duration<float, date::years::period>(sd_since_mc_release)
+			.count();
+
+	return std::make_tuple(days_since_mc_release, months_since_mc_release,
+						   years_since_mc_release);
 }
 
 float Taiga::Util::Various::conversion_rate(

@@ -86,7 +86,8 @@ void Taiga::Categories::Miscellaneous::init(
 		Command("minecraft_age")
 			.aliases({"mc", "minecraft"})				
 			.function([](const auto& obj, const auto&, const auto&, const auto&) {
-				obj.channel.create_message(fmt::format("Minecraft is {} days old.", Taiga::Util::Various::minecraft_age()));
+				const auto& [days, months, years] = Taiga::Util::Various::minecraft_age();
+				obj.channel.create_message(fmt::format("Minecraft is {} days old ({:.2f} months, {:.2f} years).", days, months, years));
 			})
 			.category(*this),
 		log);

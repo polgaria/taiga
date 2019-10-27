@@ -9,7 +9,7 @@ class Various {
 	static std::string get_random_reddit_post_url(
 		const std::string_view subreddit);
 	static std::pair<float, unsigned short> year_progress();
-	static unsigned short minecraft_age();
+	static std::tuple<unsigned short, float, float> minecraft_age();
 	static float conversion_rate(const std::string_view from,
 								 const std::string_view to,
 								 const std::optional<std::string>& api_key,
