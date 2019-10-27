@@ -12,16 +12,16 @@ set(HEADER_LIST
     "${taiga_SOURCE_DIR}/include/taiga/categories/Timezone.hpp"
     "${taiga_SOURCE_DIR}/include/taiga/categories/Miscellaneous.hpp"
     "${taiga_SOURCE_DIR}/include/taiga/categories/Weather.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/categories/Since.hpp"	
     "${taiga_SOURCE_DIR}/include/taiga/util/Various.hpp"
     "${taiga_SOURCE_DIR}/include/taiga/util/Math.hpp"
     "${taiga_SOURCE_DIR}/include/taiga/util/String.hpp"
-    "${taiga_SOURCE_DIR}/include/taiga/util/Command.hpp")
+    "${taiga_SOURCE_DIR}/include/taiga/util/Command.hpp"
+	"${taiga_SOURCE_DIR}/include/taiga/util/Date.hpp")
 
 add_library(
   taiga
-  util/Command.cpp
-  util/Various.cpp
-  util/String.cpp
+  Bot.cpp  
   categories/General.cpp
   categories/Prefix.cpp
   categories/Reddit.cpp
@@ -29,7 +29,11 @@ add_library(
   categories/Timezone.cpp
   categories/Miscellaneous.cpp
   categories/Weather.cpp
-  Bot.cpp
+  categories/Since.cpp
+  util/Various.cpp
+  util/String.cpp
+  util/Command.cpp  
+  util/Date.cpp
   ${HEADER_LIST})
 
 target_include_directories(taiga PUBLIC ../include ${CPR_INCLUDE_DIRS}

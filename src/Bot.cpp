@@ -7,6 +7,7 @@
 #include <taiga/categories/Miscellaneous.hpp>
 #include <taiga/categories/Prefix.hpp>
 #include <taiga/categories/Reddit.hpp>
+#include <taiga/categories/Since.hpp>
 #include <taiga/categories/Timezone.hpp>
 #include <taiga/categories/Weather.hpp>
 #include <taiga/util/String.hpp>
@@ -148,10 +149,7 @@ void Taiga::Bot::load_config() {
 		throw std::runtime_error("No config found.");
 	}
 
-	nlohmann::json config_json;
-	config_file >> config_json;
-
-	config_file.close();
+	nlohmann::json config_json = nlohmann::json::parse(config_file);
 
 	Taiga::Config::Config conf;
 	ENTRY(prefix, "Invalid config: The bot prefix is missing.")
@@ -181,6 +179,7 @@ void Taiga::Bot::load_categories() {
 	INIT_CATEGORY(Reddit);
 	INIT_CATEGORY(Conversion);
 	INIT_CATEGORY(Timezone);
+	INIT_CATEGORY(Since);
 	INIT_CATEGORY(Miscellaneous);
 	INIT_CATEGORY(Weather);
 }

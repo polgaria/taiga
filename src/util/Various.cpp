@@ -28,47 +28,6 @@ std::string Taiga::Util::Various::get_random_reddit_post_url(
 		.get<std::string>();
 }
 
-std::pair<float, unsigned short> Taiga::Util::Various::year_progress() {
-	const auto& now = std::chrono::system_clock::now();
-
-	const date::year_month_day& current_date = date::floor<date::days>(now);
-	const auto& days_in_year = current_date.year().is_leap() ? 366 : 365;
-
-	const date::year_month_day& next_date =
-		date::January / 1 / current_date.year() + date::years{1};
-	const float days_until_next_year = static_cast<float>(
-		(date::sys_days(next_date) - date::sys_days(current_date)).count());
-
-	auto nonrounded_percent =
-		100.f - (days_until_next_year / std::move(days_in_year) * 100);
-
-	return std::make_pair(Taiga::Util::Math::round_to_dec_places(
-							  std::move(nonrounded_percent), 2),
-						  days_until_next_year);
-}
-
-std::tuple<unsigned short, float, float> Taiga::Util::Various::minecraft_age() {
-	const auto& now = std::chrono::system_clock::now();
-	const date::year_month_day& mc_release_date = date::May / 17 / 2009;
-
-	const date::year_month_day& current_date = date::floor<date::days>(now);
-
-	const auto sd_since_mc_release =
-		date::sys_days(current_date) - date::sys_days(mc_release_date);
-
-	const auto days_since_mc_release =
-		static_cast<unsigned short>(sd_since_mc_release.count());
-	const auto months_since_mc_release =
-		std::chrono::duration<float, date::months::period>(sd_since_mc_release)
-			.count();
-	const auto years_since_mc_release =
-		std::chrono::duration<float, date::years::period>(sd_since_mc_release)
-			.count();
-
-	return std::make_tuple(days_since_mc_release, months_since_mc_release,
-						   years_since_mc_release);
-}
-
 float Taiga::Util::Various::conversion_rate(
 	const std::string_view from, const std::string_view to,
 	const std::optional<std::string>& api_key,
