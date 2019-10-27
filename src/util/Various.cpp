@@ -31,22 +31,33 @@ std::string Taiga::Util::Various::get_random_reddit_post_url(
 std::pair<float, unsigned short> Taiga::Util::Various::year_progress() {
 	const auto& now = std::chrono::system_clock::now();
 
-	const auto& current_date =
-		date::year_month_day{date::floor<date::days>(now)};
+	const date::year_month_day& current_date = date::floor<date::days>(now);
 	const auto& days_in_year = current_date.year().is_leap() ? 366 : 365;
 
-	const auto& next_date = date::year_month_day{
-		date::January / 1 / current_date.year() + date::years{1}};
-	const unsigned short& days_until_next_year = static_cast<unsigned short>(
+	const date::year_month_day& next_date =
+		date::January / 1 / current_date.year() + date::years{1};
+	const float days_until_next_year = static_cast<float>(
 		(date::sys_days(next_date) - date::sys_days(current_date)).count());
 
 	auto nonrounded_percent =
-		100.f - (static_cast<float>(days_until_next_year) /
-				 std::move(days_in_year) * 100);
+		100.f - (days_until_next_year / std::move(days_in_year) * 100);
 
 	return std::make_pair(Taiga::Util::Math::round_to_dec_places(
 							  std::move(nonrounded_percent), 2),
 						  days_until_next_year);
+}
+
+unsigned short Taiga::Util::Various::minecraft_age() {
+	const auto& now = std::chrono::system_clock::now();
+	const date::year_month_day& mc_release_date = date::May / 17 / 2009;
+
+	const date::year_month_day& current_date = date::floor<date::days>(now);
+
+	const unsigned short days_since_mc_release = static_cast<unsigned short>(
+		(date::sys_days(current_date) - date::sys_days(mc_release_date))
+			.count());
+
+	return days_since_mc_release;
 }
 
 float Taiga::Util::Various::conversion_rate(
@@ -139,10 +150,10 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 					   ? 0xFDB813
 					   : 0x0F1112);
 
-	const auto& weather_description = Aisaka::Util::String::join(
-		json["current"]["weather_descriptions"].get<std::vector<std::string>>(),
-		"\n");
-	embed.description(fmt::format("*{}*", std::move(weather_description)));
+	embed.description(
+		fmt::format("*{}*", fmt::join(json["current"]["weather_descriptions"]
+										  .get<std::vector<std::string>>(),
+									  "\n")));
 
 	const auto& temperature = json["current"]["temperature"].get<int>();
 	const auto& feels_like = json["current"]["feelslike"].get<int>();
@@ -182,11 +193,10 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 
 	embed.fields(std::move(fields));
 
-	auto thumbnail = aegis::gateway::objects::thumbnail();
-	thumbnail.url = json["current"]["weather_icons"]
-						.get<std::vector<std::string>>()
-						.front();
-	embed.thumbnail(std::move(thumbnail));
+	embed.thumbnail(
+		aegis::gateway::objects::thumbnail(json["current"]["weather_icons"]
+											   .get<std::vector<std::string>>()
+											   .front()));
 
 	embed.footer(
 		aegis::gateway::objects::footer("Powered by https://weatherstack.com"));

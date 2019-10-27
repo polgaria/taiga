@@ -12,6 +12,6 @@ target_link_libraries(taiga-main PUBLIC taiga)
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT result)
-if(result)
+if(CMAKE_BUILD_TYPE STREQUAL Release AND result)
   set_target_properties(taiga-main PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()

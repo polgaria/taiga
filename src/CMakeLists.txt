@@ -51,7 +51,7 @@ endif()
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT result)
-if(result)
+if(CMAKE_BUILD_TYPE STREQUAL Release AND result)
   set_target_properties(taiga PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
