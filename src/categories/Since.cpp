@@ -85,9 +85,14 @@ void Taiga::Categories::Since::init(spdlog::logger& log,
 
 	commands.add_command(
 		Command("time_since")
-			.metadata(Metadata()
-						  .description("The time since an ISO string.")
-						  .examples(Examples{{"placeholder", "placeholder"}}))
+			.metadata(
+				Metadata()
+					.description(
+						"The time passed since a specific date in ISO format.")
+					// stupid clang-format
+					// clang-format off
+						  .examples(Examples{{"2019-01-01", "`It has been 299.96 days (9.85 months, 0.82 years) since 2019-01-01.`"}}))
+			// clang-format on
 			.aliases({"timesince", "ts"})
 			.function(time_since)
 			.category(*this),
@@ -96,6 +101,8 @@ void Taiga::Categories::Since::init(spdlog::logger& log,
 	// clang-format off
 	commands.add_command(
 		Command("minecraft_age")
+			.metadata(Metadata()
+						.description("The time passed since Minecraft was originally released."))
 			.aliases({"mc", "minecraft"})
 			.function([](const auto& obj, const auto&, const auto&,
 						 const auto&) {
