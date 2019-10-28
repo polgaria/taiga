@@ -6,10 +6,8 @@ set(HEADER_LIST
 	"${taiga_SOURCE_DIR}/include/taiga/Config.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/Version.hpp"	
     "${taiga_SOURCE_DIR}/include/taiga/categories/General.hpp"
-    "${taiga_SOURCE_DIR}/include/taiga/categories/Prefix.hpp"
     "${taiga_SOURCE_DIR}/include/taiga/categories/Reddit.hpp"
     "${taiga_SOURCE_DIR}/include/taiga/categories/Conversion.hpp"
-    "${taiga_SOURCE_DIR}/include/taiga/categories/Timezone.hpp"
     "${taiga_SOURCE_DIR}/include/taiga/categories/Miscellaneous.hpp"
     "${taiga_SOURCE_DIR}/include/taiga/categories/Weather.hpp"
 	"${taiga_SOURCE_DIR}/include/taiga/categories/Since.hpp"	
@@ -23,10 +21,8 @@ add_library(
   taiga
   Bot.cpp  
   categories/General.cpp
-  categories/Prefix.cpp
   categories/Reddit.cpp
   categories/Conversion.cpp
-  categories/Timezone.cpp
   categories/Miscellaneous.cpp
   categories/Weather.cpp
   categories/Since.cpp
@@ -37,13 +33,11 @@ add_library(
   ${HEADER_LIST})
 
 target_include_directories(taiga PUBLIC ../include ${CPR_INCLUDE_DIRS}
-                                        ${LIBMONGOCXX_INCLUDE_DIRS})
+                                       )
 
 target_link_libraries(taiga PUBLIC aisaka::aisaka date::tz ${aegis_LIBRARIES}
-                                   ${CPR_LIBRARIES} ${LIBMONGOCXX_LIBRARIES})
+                                   ${CPR_LIBRARIES})
 target_link_libraries(taiga INTERFACE date::date)
-
-target_compile_definitions(taiga PUBLIC ${LIBMONGOCXX_DEFINITIONS})
 
 target_compile_features(taiga PRIVATE cxx_std_17 ${Aegis_CFLAGS_OTHER})
 if(MSVC)

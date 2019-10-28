@@ -10,8 +10,6 @@ namespace Taiga {
 class Bot : public Aisaka::Bot {
    public:
 	Bot() : Aisaka::Bot("", "", 0) {
-		mongocxx::instance instance{};
-
 		this->load_config();
 		this->load_values_from_config();
 	}
@@ -25,14 +23,6 @@ class Bot : public Aisaka::Bot {
 		noexcept {
 		return this->_commands;
 	}
-	[[nodiscard]] inline mongocxx::pool& mongo_pool() noexcept {
-		return this->_mongo_pool;
-	}
-
-	[[nodiscard]] inline std::unordered_multimap<int64_t, std::string>&
-	prefix_cache() noexcept {
-		return this->_prefix_cache;
-	}
 
 	void load_values_from_config();
 	void load_categories();
@@ -43,8 +33,5 @@ class Bot : public Aisaka::Bot {
    private:
 	Taiga::Config::Config _config;
 	Aisaka::Commands<Taiga::Bot> _commands;
-	mongocxx::pool _mongo_pool;
-
-	std::unordered_multimap<int64_t, std::string> _prefix_cache;
 };
 }  // namespace Taiga

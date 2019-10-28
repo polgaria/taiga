@@ -23,8 +23,6 @@ set(BUILD_TZ_LIB
     ON
     CACHE INTERNAL "")
 
-find_package(libmongocxx REQUIRED)
-
 add_subdirectory(lib/aisaka)
 add_subdirectory(lib/date)
 add_subdirectory(lib/cpr)
