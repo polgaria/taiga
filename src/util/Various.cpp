@@ -72,7 +72,7 @@ float Taiga::Util::Various::conversion_rate(
 	auto json = nlohmann::json::parse(std::move(request.content));
 
 	if (json.find(currency_to_currency) == json.end()) {
-		throw std::invalid_argument("Invalid arguments.");
+		throw std::invalid_argument("Invalid parameters.");
 	}
 	return json[currency_to_currency].get<float>();
 }

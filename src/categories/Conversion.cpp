@@ -4,8 +4,7 @@
 #include <taiga/util/Various.hpp>
 
 static void money(const aegis::gateway::events::message_create& obj,
-				  Taiga::Bot& client,
-				  const std::deque<std::string>& params,
+				  Taiga::Bot& client, const std::deque<std::string>& params,
 				  const std::string&) {
 	const auto currency_x = Taiga::Util::String::to_upper(params.front());
 	const auto currency_y = Taiga::Util::String::to_upper(params[1]);
@@ -31,7 +30,7 @@ static void money(const aegis::gateway::events::message_create& obj,
 		conversion_rate = Taiga::Util::Various::conversion_rate(
 			currency_x, currency_y, client.config().currency_conv_api_key,
 			client.core().get_rest_controller());
-	} catch (const std::runtime_error& error) {
+	} catch (const std::exception& error) {
 		obj.channel.create_message(error.what());
 
 		return;
@@ -44,8 +43,7 @@ static void money(const aegis::gateway::events::message_create& obj,
 }
 
 static void mbps(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
-				 const std::deque<std::string>& params,
-				 const std::string&) {
+				 const std::deque<std::string>& params, const std::string&) {
 	const auto _value =
 		!params.empty()
 			? Taiga::Util::String::string_to_number<float>(params.front())
@@ -60,8 +58,7 @@ static void mbps(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
 }
 
 static void mbs(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
-				const std::deque<std::string>& params,
-				const std::string&) {
+				const std::deque<std::string>& params, const std::string&) {
 	const auto _value =
 		!params.empty()
 			? Taiga::Util::String::string_to_number<float>(params.front())
