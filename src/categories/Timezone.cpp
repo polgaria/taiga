@@ -120,7 +120,8 @@ static void tz(aegis::gateway::events::message_create& obj, Taiga::Bot& client,
 			auto time_difference_string = date::format(
 				"%H", author_time.get_local_time() - time.get_local_time());
 			// if there's even any difference
-			if (time_difference_string != "-00") {
+			if (time_difference_string != "-00" &&
+				time_difference_string != "00") {
 				// then we convert the difference to an integer
 				const auto _time_difference =
 					Taiga::Util::String::string_to_number<int>(
