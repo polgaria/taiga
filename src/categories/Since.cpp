@@ -47,7 +47,7 @@ std::pair<float, unsigned short> year_progress() {
 // commands
 static void _progress(const aegis::gateway::events::message_create& obj,
 					  Taiga::Bot&, const std::deque<std::string>&,
-					  const std::string&) {
+					  const std::string_view) {
 	auto [percent, days_left] = year_progress();
 	auto msg = string_progress(percent, 20);
 
@@ -57,7 +57,7 @@ static void _progress(const aegis::gateway::events::message_create& obj,
 
 static void time_since(const aegis::gateway::events::message_create& obj,
 					   Taiga::Bot&, const std::deque<std::string>& params,
-					   const std::string&) {
+					   const std::string_view) {
 	try {
 		const auto& [days, months, years] =
 			Taiga::Util::Date::time_since_date(params.front());

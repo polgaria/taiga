@@ -5,9 +5,9 @@
 
 static void money(const aegis::gateway::events::message_create& obj,
 				  Taiga::Bot& client, const std::deque<std::string>& params,
-				  const std::string&) {
-	const auto currency_x = Taiga::Util::String::to_upper(params.front());
-	const auto currency_y = Taiga::Util::String::to_upper(params[1]);
+				  const std::string_view) {
+	const auto& currency_x = Taiga::Util::String::to_upper(params.front());
+	const auto& currency_y = Taiga::Util::String::to_upper(params[1]);
 
 	// just.. no
 	if (currency_x == currency_y) {
@@ -16,7 +16,7 @@ static void money(const aegis::gateway::events::message_create& obj,
 		return;
 	}
 
-	const auto _amount =
+	const auto& _amount =
 		params.size() >= 3
 			? Taiga::Util::String::string_to_number<float>(params[2])
 			: 1;
@@ -28,7 +28,8 @@ static void money(const aegis::gateway::events::message_create& obj,
 	float conversion_rate;
 	try {
 		conversion_rate = Taiga::Util::Various::conversion_rate(
-			currency_x, currency_y, client.config().currency_conv_api_key,
+			currency_x, currency_y,
+			client.config().currency_conv_api_key.value_or(""),
 			client.core().get_rest_controller());
 	} catch (const std::exception& error) {
 		obj.channel.create_message(error.what());
@@ -36,15 +37,16 @@ static void money(const aegis::gateway::events::message_create& obj,
 		return;
 	}
 
-	auto worth = amount * conversion_rate;
+	const auto worth = amount * conversion_rate;
 
 	obj.channel.create_message(fmt::format(
 		"{:.2f} {} is worth {:.2f} {}", amount, currency_x, worth, currency_y));
 }
 
 static void mbps(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
-				 const std::deque<std::string>& params, const std::string&) {
-	const auto _value =
+				 const std::deque<std::string>& params,
+				 const std::string_view) {
+	const auto& _value =
 		!params.empty()
 			? Taiga::Util::String::string_to_number<float>(params.front())
 			: 1;
@@ -58,7 +60,7 @@ static void mbps(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
 }
 
 static void mbs(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
-				const std::deque<std::string>& params, const std::string&) {
+				const std::deque<std::string>& params, const std::string_view) {
 	const auto _value =
 		!params.empty()
 			? Taiga::Util::String::string_to_number<float>(params.front())

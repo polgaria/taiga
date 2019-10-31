@@ -3,16 +3,14 @@
 #include <taiga/categories/Miscellaneous.hpp>
 
 static void rate(const aegis::gateway::events::message_create& obj, Taiga::Bot&,
-				 const std::deque<std::string>& params, const std::string&) {
+				 const std::deque<std::string>& params,
+				 const std::string_view) {
 	const auto ratee = Aisaka::Util::String::join(params, " ");
 
 	const auto hash = std::hash<std::string_view>();
 	std::mt19937 rand(hash(ratee));
 
 	std::random_device rd;
-	std::mt19937 guy(rd());
-	std::cout << static_cast<wchar_t>(std::uniform_real_distribution<>{
-		0, std::numeric_limits<double>::max()}(rand));
 
 	obj.channel.create_message(
 		fmt::format("I'd rate {} a {}/10", ratee,

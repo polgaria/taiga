@@ -51,8 +51,9 @@ void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 	}
 
 	std::string_view content = obj.msg.get_content();
+	std::string_view prefix;
+
 	const auto& guild_id = obj.channel.get_guild_id();
-	std::string prefix;
 
 	// try to find an existing custom prefix
 	if (this->prefix_cache().count(guild_id) > 0) {
@@ -82,8 +83,9 @@ void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 				 op_result->view()["prefix"].get_array().value) {
 				const auto& _prefix = res.get_utf8().value.to_string();
 				this->prefix_cache().emplace(guild_id, _prefix);
+
 				if (!content.compare(0, _prefix.length(), _prefix)) {
-					prefix = std::move(_prefix);
+					prefix = _prefix;
 					break;
 				}
 			}
@@ -91,30 +93,22 @@ void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 	}
 
 	if (!prefix.empty()) {
+		if (content.length() == prefix.length()) {
+			return;
+		}
 		content.remove_prefix(prefix.length());
-		auto params = Aisaka::Util::String::split_command(content, prefix);
-		if (
-			// only allow if it has at least 1 parameter
-			params.size() <= 1 &&
-			// only allow if starts with prefix
-			params.front() != prefix) {
-			return;
-		}
 
-		// remove the params as we go
-		params.pop_front();
-		if (params.empty()) {
-			return;
-		}
+		// the first parameter is the name of the command
+		auto params = Aisaka::Util::String::split(content, " ");
 
 		// get command
 		const auto& _found_command = this->commands().find_command(
 			Aisaka::Util::String::to_lower(params.front()));
 		if (!_found_command) {
-			obj.channel.create_message("Command not found.");
 			return;
 		}
 		const auto& found_command = _found_command.value();
+		// no need for it anymore
 		params.pop_front();
 
 		// if the command is owner-only
@@ -128,10 +122,13 @@ void Taiga::Bot::on_message_create(aegis::gateway::events::message_create obj) {
 		}
 
 		// check how many parameters are required
-		unsigned short required_params =
-			static_cast<unsigned short>(std::count_if(
-				found_command.params().begin(), found_command.params().end(),
-				[](const auto& param) { return param.required(); }));
+		ushort required_params = 0;
+		for (const auto& param : found_command.params()) {
+			if (param.required()) {
+				required_params++;
+			}
+		}
+
 		if (params.size() < required_params) {
 			obj.channel.create_message("Too few parameters.");
 			return;

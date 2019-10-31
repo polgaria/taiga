@@ -6,11 +6,10 @@
 #include <taiga/util/Various.hpp>
 
 static void weather(aegis::gateway::events::message_create& obj,
-					Taiga::Bot& client,
-					const std::deque<std::string>& params,
-					const std::string&) {
+					Taiga::Bot& client, const std::deque<std::string>& params,
+					const std::string_view) {
 	if (!client.config().weather_api_key) {
-		obj.channel.create_message("API key not set!");
+		obj.channel.create_message("Weatherstack API key not set!");
 		return;
 	}
 
@@ -19,14 +18,14 @@ static void weather(aegis::gateway::events::message_create& obj,
 		obj.channel.create_message_embed(aegis::create_message_t().embed(
 			Taiga::Util::Various::get_weather_embed(
 				client.config().weather_api_key.value(), location)));
-	} catch (const std::runtime_error& error) {
+	} catch (const std::exception& error) {
 		obj.channel.create_message(error.what());
 		return;
 	}
 }
 
-void Taiga::Categories::Weather::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands) {
+void Taiga::Categories::Weather::init(spdlog::logger& log,
+									  Aisaka::Commands<Taiga::Bot>& commands) {
 	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;

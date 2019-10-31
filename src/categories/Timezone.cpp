@@ -10,9 +10,8 @@
 #include <taiga/util/String.hpp>
 
 static void set_tz(aegis::gateway::events::message_create& obj,
-				   Taiga::Bot& client,
-				   const std::deque<std::string>& params,
-				   const std::string&) {
+				   Taiga::Bot& client, const std::deque<std::string>& params,
+				   const std::string_view) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;
@@ -20,8 +19,7 @@ static void set_tz(aegis::gateway::events::message_create& obj,
 
 	const auto& mongo_client = client.mongo_pool().acquire();
 	const auto& tz_to_set = params.front();
-	auto db = (*mongo_client)[client.config().name];
-	auto timezones = db["timezones"];
+	auto timezones = (*mongo_client)[client.config().name]["timezones"];
 
 	using Time =
 		date::zoned_time<std::chrono::nanoseconds, const date::time_zone*>;
@@ -29,12 +27,11 @@ static void set_tz(aegis::gateway::events::message_create& obj,
 
 	std::string_view timezone;
 	for (const auto& tz : date::get_tzdb().zones) {
-		const auto&& tz_name = std::move(tz.name());
+		const auto& tz_name = tz.name();
 		if (Aisaka::Util::String::to_lower(tz_to_set) ==
 			Aisaka::Util::String::to_lower(tz_name)) {
-			timezone = std::move(tz_name);
-			time = date::zoned_time{std::move(&tz),
-									std::chrono::system_clock::now()};
+			timezone = tz_name;
+			time = Time(std::move(&tz), std::chrono::system_clock::now());
 			break;
 		}
 	}
@@ -61,9 +58,8 @@ static void set_tz(aegis::gateway::events::message_create& obj,
 					timezone, date::format("%F %H:%M", time)));
 }
 
-static void tz(aegis::gateway::events::message_create& obj,
-			   Taiga::Bot& client,
-			   const std::deque<std::string>& params, const std::string&) {
+static void tz(aegis::gateway::events::message_create& obj, Taiga::Bot& client,
+			   const std::deque<std::string>& params, const std::string_view) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;
@@ -72,13 +68,12 @@ static void tz(aegis::gateway::events::message_create& obj,
 	auto find_user = !params.empty();
 
 	const auto& mongo_client = client.mongo_pool().acquire();
-	auto db = (*mongo_client)[client.config().name];
-	auto timezones = db["timezones"];
+	auto timezones = (*mongo_client)[client.config().name]["timezones"];
 
-	std::string member_name{};
+	std::string member_name;
 	auto id = !find_user ? obj.msg.author.id.get() : 0;
 
-	const auto user_to_find = Aisaka::Util::String::join(params, " ");
+	const auto& user_to_find = Aisaka::Util::String::join(params, " ");
 
 	if (find_user) {
 		const auto& _member =
@@ -108,20 +103,19 @@ static void tz(aegis::gateway::events::message_create& obj,
 		return;
 	}
 
-	auto timezone = op_result->view()["timezone"].get_utf8().value.to_string();
-	auto time = date::zoned_time{timezone, std::chrono::system_clock::now()};
+	const auto& timezone =
+		op_result->view()["timezone"].get_utf8().value.to_string();
+	const auto& now = std::chrono::system_clock::now();
 
 	std::string output;
 	if (find_user) {
 		op_result = timezones.find_one(
 			document{} << "id" << obj.msg.get_author_id().get() << finalize);
 		if (op_result) {
-			auto author_time = date::zoned_time{
+			const auto& author_time = date::zoned_time(
 				op_result->view()["timezone"].get_utf8().value.to_string(),
-				std::chrono::system_clock::now()};
-			// if not done, the time difference can end up being 00:59 and
-			// not an hour
-			time = date::zoned_time{timezone, std::chrono::system_clock::now()};
+				now);
+			const auto& time = date::zoned_time(timezone, now);
 
 			auto time_difference_string = date::format(
 				"%H", author_time.get_local_time() - time.get_local_time());
@@ -139,7 +133,7 @@ static void tz(aegis::gateway::events::message_create& obj,
 
 					return;
 				}
-				const auto time_difference = _time_difference.value();
+				const auto& time_difference = _time_difference.value();
 
 				// are we behind or ahead?
 				const auto is_behind = time_difference < 0;
@@ -166,17 +160,19 @@ static void tz(aegis::gateway::events::message_create& obj,
 			}
 		}
 	} else {
+		const auto time = date::zoned_time(timezone, now);
+
 		output = fmt::format(
 			"Your timezone is "
 			"{}.\nYour time is: {}.",
 			timezone, date::format("%F %H:%M", time));
 	}
 
-	obj.channel.create_message(std::move(output));
+	obj.channel.create_message(output);
 }
 
-void Taiga::Categories::Timezone::init(
-	spdlog::logger& log, Aisaka::Commands<Taiga::Bot>& commands) {
+void Taiga::Categories::Timezone::init(spdlog::logger& log,
+									   Aisaka::Commands<Taiga::Bot>& commands) {
 	using Command = Aisaka::Command<Taiga::Bot>;
 	using Metadata = Aisaka::Metadata;
 	using Parameter = Aisaka::Parameter;

@@ -10,9 +10,8 @@
 
 static void help(aegis::gateway::events::message_create& obj,
 				 Taiga::Bot& client, const std::deque<std::string>& params,
-				 const std::string& command_prefix) {
+				 const std::string_view command_prefix) {
 	using aegis::gateway::objects::field;
-	auto fields = std::vector<field>();
 
 	const auto& commands = client.commands().all;
 
@@ -51,10 +50,10 @@ static void help(aegis::gateway::events::message_create& obj,
 			if (_found_category != categories.end() && type != "command") {
 				const auto& found_category = _found_category->second;
 
-				auto embed{
+				auto embed =
 					aegis::gateway::objects::embed()
 						.title(fmt::format("**{}**", found_category.name()))
-						.color(client.config().color)};
+						.color(client.config().color);
 				std::string output;
 
 				// find commands in that category
@@ -86,6 +85,9 @@ static void help(aegis::gateway::events::message_create& obj,
 
 			return;
 		}
+
+		std::vector<field> fields;
+		fields.reserve(1);
 
 		const auto& command = commands.at(name.data());
 
@@ -131,6 +133,7 @@ static void help(aegis::gateway::events::message_create& obj,
 		}
 		if (!command.metadata().examples().empty()) {
 			std::string examples_string;
+			examples_string.reserve(command_prefix.length());
 
 			for (const auto& example : command.metadata().examples()) {
 				examples_string += fmt::format("`> {}{} {}`\n", command_prefix,
@@ -151,11 +154,14 @@ static void help(aegis::gateway::events::message_create& obj,
 		return;
 	}
 
+	std::vector<field> fields;
+	fields.reserve(1);
+
 	auto embed = aegis::gateway::objects::embed()
 					 .title("**Commands**")
 					 .color(client.config().color);
-	auto fields_content = nlohmann::fifo_map<std::string, std::string>();
-	auto added = std::unordered_set<std::string_view>();
+	nlohmann::fifo_map<std::string, std::string> fields_content;
+	std::unordered_set<std::string_view> added;
 
 	for (const auto& command : commands) {
 		// check if command is owner-only and if the user executing it is the
@@ -188,7 +194,7 @@ static void help(aegis::gateway::events::message_create& obj,
 // totally not stolen from aegisbot... shh..
 static void info(aegis::gateway::events::message_create& obj,
 				 Taiga::Bot& client, const std::deque<std::string>&,
-				 const std::string&) {
+				 const std::string_view) {
 	using aegis::gateway::objects::field;
 	const auto& bot_avatar = client.core().self()->get_avatar();
 
@@ -245,7 +251,7 @@ static void info(aegis::gateway::events::message_create& obj,
 }
 
 static void server(aegis::gateway::events::message_create& obj, Taiga::Bot&,
-				   const std::deque<std::string>&, const std::string&) {
+				   const std::deque<std::string>&, const std::string_view) {
 	using aegis::gateway::objects::field;
 
 	const auto& guild = obj.msg.get_guild();

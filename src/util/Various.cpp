@@ -28,12 +28,12 @@ std::string Taiga::Util::Various::get_random_reddit_post_url(
 		.get<std::string>();
 }
 
-float Taiga::Util::Various::conversion_rate(
-	const std::string_view from, const std::string_view to,
-	const std::optional<std::string>& api_key,
-	aegis::rest::rest_controller& rc) {
-	if (!api_key.has_value()) {
-		throw std::runtime_error("Currency API key not set.");
+float Taiga::Util::Various::conversion_rate(const std::string_view from,
+											const std::string_view to,
+											const std::string_view api_key,
+											aegis::rest::rest_controller& rc) {
+	if (api_key.empty()) {
+		throw std::invalid_argument("Currency API key not set.");
 	}
 	auto currency_to_currency = fmt::format("{}_{}", from, to);
 	Taiga::Util::String::to_upper(currency_to_currency);
@@ -41,7 +41,7 @@ float Taiga::Util::Various::conversion_rate(
 	aegis::rest::request_params rp;
 	rp.host = "free.currconv.com";
 	rp.path = fmt::format("/api/v7/convert?q={}&compact=ultra&apiKey={}",
-						  currency_to_currency, api_key.value());
+						  currency_to_currency, api_key);
 	rp.method = aegis::rest::Get;
 	rp.headers = {"User-Agent: taiga"};
 
@@ -56,7 +56,7 @@ float Taiga::Util::Various::conversion_rate(
 			throw std::runtime_error("Ratelimited.");
 		}
 		case aegis::rest::http_code::bad_request: {
-			throw std::runtime_error("Invalid API key.");
+			throw std::invalid_argument("Invalid API key.");
 		}
 		case aegis::rest::http_code::service_unavailable:
 		case aegis::rest::http_code::internal_server_error:
@@ -81,7 +81,12 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 	const std::string_view api_key, const std::string_view location) {
 	using aegis::gateway::objects::field;
 	using aegis::gateway::objects::footer;
-	const auto request =
+
+	if (api_key.empty()) {
+		throw std::invalid_argument("Weatherstack API key not set!");
+	}
+
+	const auto& request =
 		cpr::Get(cpr::Url{fmt::format("http://api.weatherstack.com/"
 									  "current?access_key={}&query={}",
 									  api_key, location)},
@@ -108,7 +113,7 @@ aegis::gateway::objects::embed Taiga::Util::Various::get_weather_embed(
 	auto json = nlohmann::json::parse(std::move(request.text));
 
 	if (json.find("request") == json.end()) {
-		throw std::runtime_error("Invalid location.");
+		throw std::invalid_argument("Invalid location.");
 	}
 
 	auto embed =
