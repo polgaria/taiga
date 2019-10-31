@@ -156,7 +156,7 @@ static void tz(aegis::gateway::events::message_create& obj, Taiga::Bot& client,
 				// thanks aegis.cpp
 				output = fmt::format(
 					"{0}'s timezone is "
-					"{1}.\n{0}'s time is {2}.",
+					"{1}.\nTheir time is {2}.",
 					member_name, timezone, date::format("%F %H:%M", time));
 			}
 		}
