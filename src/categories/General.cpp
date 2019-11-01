@@ -7,6 +7,7 @@
 #include <taiga/util/Command.hpp>
 #include <taiga/util/Math.hpp>
 #include <taiga/util/String.hpp>
+#include <taiga/util/Various.hpp>
 
 static void help(aegis::gateway::events::message_create& obj,
 				 Taiga::Bot& client, const std::deque<std::string>& params,
@@ -201,13 +202,14 @@ static void info(aegis::gateway::events::message_create& obj,
 	auto embed =
 		aegis::gateway::objects::embed()
 			.title(fmt::format("{} v{}", client.config().name, TAIGA_VERSION))
-			.description(fmt::format(
-				"{}\nMemory usage: **{}**",
-				client.config().git_repo.has_value()
-					? fmt::format("[Source code]({})\n",
-								  client.config().git_repo.value())
-					: "",
-				aegis::utility::format_bytes(aegis::utility::getCurrentRSS())))
+			.description(
+				fmt::format("{}\nMemory usage: **{}**",
+							client.config().git_repo.has_value()
+								? fmt::format("[Source code]({})\n",
+											  client.config().git_repo.value())
+								: "",
+							Taiga::Util::Various::format_bytes(
+								aegis::utility::getCurrentRSS())))
 			.color(client.config().color)
 			.thumbnail(aegis::gateway::objects::thumbnail{fmt::format(
 				"https://cdn.discordapp.com/avatars/{}/{}.webp?size=1024",
