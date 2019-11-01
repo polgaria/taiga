@@ -4,7 +4,7 @@
 
 std::optional<std::reference_wrapper<aegis::user>>
 Taiga::Util::Command::find_user(const std::string_view name,
-								const aegis::gateway::objects::message& msg,
+								aegis::gateway::objects::message& msg,
 								Taiga::Bot& client) {
 	// in case a user is mentioned
 	if (!msg.mentions.empty()) {
@@ -18,19 +18,12 @@ Taiga::Util::Command::find_user(const std::string_view name,
 	}
 
 	// if not, (try to) find by username/nickname
-	auto& m = client.core().get_user_mutex();
-	std::unique_lock<aegis::shared_mutex> l(m);
-	auto& users = client.core().get_user_map();
-
-	for (auto& [_id, member] : users) {
+	for (auto& [_id, member] : msg.get_guild().get_members()) {
 		if (member->get_username() == name ||
 			member->get_name(msg.get_guild_id()) == name) {
-			l.unlock();
-
-			return *member.get();
+			return *member;
 		}
 	}
-	l.unlock();
 
 	// we assume it's an ID
 	const auto member_id = Taiga::Util::String::string_to_number<int64_t>(name);

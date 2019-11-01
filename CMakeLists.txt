@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.12...3.15)
 
 set(taiga_VERSION_MAJOR 1)
-set(taiga_VERSION_MINOR 5)
-set(taiga_VERSION_PATCH 7)
+set(taiga_VERSION_MINOR 6)
+set(taiga_VERSION_PATCH 0)
 set(taiga_VERSION "${taiga_VERSION_MAJOR}.${taiga_VERSION_MINOR}.${taiga_VERSION_PATCH}")
 
 project(

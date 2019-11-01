@@ -9,27 +9,26 @@
 namespace Taiga {
 class Bot : public Aisaka::Bot {
    public:
-	Bot() : Aisaka::Bot("", "", 0) {
-		mongocxx::instance instance{};
-
+	Bot()
+		: Aisaka::Bot("", "", 0),
+		  _instance(std::make_unique<mongocxx::instance>()),
+		  _pool(std::make_unique<mongocxx::pool>(mongocxx::uri{})) {
 		this->load_config();
 		this->load_values_from_config();
 	}
 	virtual ~Bot() override = default;
 
 	void load_config();
-	[[nodiscard]] inline Taiga::Config::Config& config() noexcept {
+	[[nodiscard]] Taiga::Config::Config& config() noexcept {
 		return this->_config;
 	}
-	[[nodiscard]] const inline Aisaka::Commands<Taiga::Bot>& commands() const
+	[[nodiscard]] const Aisaka::Commands<Taiga::Bot>& commands() const
 		noexcept {
 		return this->_commands;
 	}
-	[[nodiscard]] inline mongocxx::pool& mongo_pool() noexcept {
-		return this->_mongo_pool;
-	}
+	[[nodiscard]] mongocxx::pool& mongo_pool() noexcept { return *this->_pool; }
 
-	[[nodiscard]] inline std::unordered_multimap<int64_t, std::string>&
+	[[nodiscard]] std::unordered_multimap<int64_t, std::string>&
 	prefix_cache() noexcept {
 		return this->_prefix_cache;
 	}
@@ -43,7 +42,9 @@ class Bot : public Aisaka::Bot {
    private:
 	Taiga::Config::Config _config;
 	Aisaka::Commands<Taiga::Bot> _commands;
-	mongocxx::pool _mongo_pool;
+
+	std::unique_ptr<mongocxx::instance> _instance;
+	std::unique_ptr<mongocxx::pool> _pool;
 
 	std::unordered_multimap<int64_t, std::string> _prefix_cache;
 };

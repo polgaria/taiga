@@ -36,8 +36,10 @@ add_library(
   util/Date.cpp
   ${HEADER_LIST})
 
-target_include_directories(taiga PUBLIC ../include ${CPR_INCLUDE_DIRS}
-                                        ${LIBMONGOCXX_INCLUDE_DIRS})
+target_include_directories(taiga PUBLIC ../include
+										${CPR_INCLUDE_DIRS}
+                                        ${LIBMONGOCXX_INCLUDE_DIRS}
+										${robin_hood_INCLUDE_DIRS})
 
 target_link_libraries(taiga PUBLIC aisaka::aisaka date::tz ${aegis_LIBRARIES}
                                    ${CPR_LIBRARIES} ${LIBMONGOCXX_LIBRARIES})

@@ -9,7 +9,7 @@
 
 static void remove_prefix_from_cache(
 	std::unordered_multimap<std::int64_t, std::string>& cache,
-	const int64_t& id, const std::string_view& prefix) {
+	const int64_t& id, const std::string_view prefix) {
 	const auto& range = cache.equal_range(id);
 
 	const auto& prefix_in_cache = std::find_if(
@@ -22,15 +22,14 @@ static void remove_prefix_from_cache(
 
 static void add_prefix_to_cache(
 	std::unordered_multimap<std::int64_t, std::string>& cache,
-	const int64_t& id, const std::string_view& prefix) {
+	const int64_t& id, const std::string_view prefix) {
 	cache.emplace(id, prefix);
 }
 
 // TODO: clean up this horrible mess
 static void prefix(aegis::gateway::events::message_create& obj,
-				   Taiga::Bot& client,
-				   const std::deque<std::string>& params,
-				   const std::string&) {
+				   Taiga::Bot& client, const std::deque<std::string>& params,
+				   const std::string_view) {
 	using bsoncxx::builder::stream::close_document;
 	using bsoncxx::builder::stream::document;
 	using bsoncxx::builder::stream::finalize;
