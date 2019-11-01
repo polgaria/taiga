@@ -25,7 +25,7 @@ static std::tuple<float, float, float> minecraft_age() {
 	return Taiga::Util::Date::time_since_date(date::sys_days(mc_release_date));
 }
 
-std::pair<float, unsigned short> year_progress() {
+std::tuple<float, float, float> year_progress() {
 	const auto& now = std::chrono::system_clock::now();
 
 	const date::year_month_day& current_date = date::floor<date::days>(now);
@@ -33,26 +33,26 @@ std::pair<float, unsigned short> year_progress() {
 
 	const auto& next_date =
 		date::January / 1 / current_date.year() + date::years{1};
-	const float days_until_next_year = static_cast<float>(
-		(date::sys_days(next_date) - date::sys_days(current_date)).count());
+	const auto& [days, months, _] =
+		Taiga::Util::Date::time_until_date(date::sys_days(next_date));
 
-	auto nonrounded_percent =
-		100.f - (days_until_next_year / std::move(days_in_year) * 100);
+	auto nonrounded_percent = 100.f - (days / std::move(days_in_year) * 100);
 
-	return std::make_pair(Taiga::Util::Math::round_to_dec_places(
-							  std::move(nonrounded_percent), 2),
-						  days_until_next_year);
+	return std::make_tuple(Taiga::Util::Math::round_to_dec_places(
+							   std::move(nonrounded_percent), 2),
+						   days, months);
 }
 
 // commands
 static void _progress(const aegis::gateway::events::message_create& obj,
 					  Taiga::Bot&, const std::deque<std::string>&,
 					  const std::string_view) {
-	auto [percent, days_left] = year_progress();
+	auto [percent, days, months] = year_progress();
 	auto msg = string_progress(percent, 20);
 
 	obj.channel.create_message(
-		fmt::format("{} {:.2f}%, {} days left", msg, percent, days_left));
+		fmt::format("{} {:.2f}%, {:.2f} days ({:.2f} months) left.", msg,
+					percent, days, months));
 }
 
 static void time_since(const aegis::gateway::events::message_create& obj,

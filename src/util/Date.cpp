@@ -37,3 +37,18 @@ std::tuple<float, float, float> Taiga::Util::Date::time_since_date(
 	}
 	return time_since_date(date.value());
 }
+
+std::tuple<float, float, float> Taiga::Util::Date::time_until_date(
+	const date::sys_seconds& date) {
+	const auto& d_until_date = date - std::chrono::system_clock::now();
+
+	const auto& days_until_date =
+		Duration<date::days::period>(d_until_date).count();
+	const auto& months_until_date =
+		Duration<date::months::period>(d_until_date).count();
+	const auto& years_until_date =
+		Duration<date::years::period>(d_until_date).count();
+
+	return std::make_tuple(days_until_date, months_until_date,
+						   years_until_date);
+}
